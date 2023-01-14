@@ -8,10 +8,40 @@
               欢迎来到EGW <b>WORKSTATION</b>
             </h1>
             <p class="subheading font-weight-regular">
-              EGW WORKSTATION是一个帮助开发者进行短代码开发建立的简易平台。致力于通过简单、功能丰富的框架维持EGW短代码的运行。
+              EGW WORKSTATION是一个帮助EGW开发者进行短代码开发和开源而建立的简易平台。致力于通过简单、功能丰富的框架维持EGW短代码的运行。
             </p>
             <p>[heimu]当然，这家伙不稳定的时候也很多（:P[/heimu]</p>
           </v-col>
+          <v-card style="margin: 10px">
+            <template slot="progress">
+              <v-progress-linear color="deep-purple" height="10" indeterminate></v-progress-linear>
+            </template>
+            <v-card-title>许可协议<v-icon slot="prepend" color="black">
+                mdi-license
+              </v-icon></v-card-title>
+            <v-card-text>
+              <div style="color: black;">
+                [heimu]开源！开源！还是██的开源！[/heimu]<br>本站所有的开放源代码都使用GPL许可协议进行开源。当您任何以形式修改本站公开源代码时，您必须保证它不是闭源的，并且必须采用GPL许可协议进行开源。
+                <br>
+                <v-divider></v-divider>
+                <br>
+                <h3>技术栈</h3>
+                <v-chip class="ma-2" color="yellow">
+                  <v-icon left>
+                    mdi-language-javascript
+                  </v-icon>
+                  <b>javascript</b>：标签识别与执行
+                </v-chip>
+                <v-chip class="ma-2" color="green">
+                  <v-icon left>
+                    mdi-vuejs
+                  </v-icon>
+                  <b>Vuejs</b>：本站前端
+                </v-chip>
+              </div>
+            </v-card-text>
+            
+          </v-card>
         </v-flex>
         <v-flex lg4 xs12>
           <v-card>
@@ -20,11 +50,13 @@
             </template>
             <v-card-title>当前WORKSTATION：</v-card-title>
             <v-card-text>
-              <div style="color: black;">拥有<b><span class="strong">数量</span></b>个<br>正在运行的短代码；<br><br>
-                当前，框架总量大小为：<br><b><span class="strong">大小</span></b>Kib
+              <div style="color: black;">拥有<b><span class="strong">{{
+                stati_data['labelNum']
+              }}</span></b>个<br>正在运行的短代码；<br><br>
+                当前，框架总量大小为：<br><b><span class="strong">{{ stati_data['totalSize'] }}</span></b>Kb
               </div>
             </v-card-text>
-            <v-divider class="mx-4"></v-divider>
+            
           </v-card>
           <br>
           <v-card>
@@ -34,10 +66,12 @@
             <v-card-title>
               <h3>搜索WORKSTATION的短代码</h3>
             </v-card-title>
+              
             <v-card-text>
+              使用内置搜索器搜索（不支持源代码搜索）
               <div>
                 <template>
-                  <v-text-field>
+                  <v-text-field id="search">
                     <v-icon slot="prepend" color="black">
                       mdi-magnify
                     </v-icon>
@@ -45,21 +79,9 @@
                 </template>
               </div>
             </v-card-text>
-            <v-divider class="mx-4"></v-divider>
           </v-card>
         </v-flex>
       </v-layout>
-      <v-col class="mb-5" cols="12">
-        <h2 class="headline font-weight-bold mb-3">
-          What's next?
-        </h2>
-
-        <v-row justify="center">
-          <a v-for="(next, i) in whatsNext" :key="i" :href="next.href" class="subheading mx-3" target="_blank">
-            {{ next.text }}
-          </a>
-        </v-row>
-      </v-col>
 
       <v-col class="mb-5" cols="12">
         <h2 class="headline font-weight-bold mb-3">
@@ -72,27 +94,19 @@
           </a>
         </v-row>
       </v-col>
-
-      <v-col class="mb-5" cols="12">
-        <h2 class="headline font-weight-bold mb-3">
-          Ecosystem
-        </h2>
-
-        <v-row justify="center">
-          <a v-for="(eco, i) in ecosystem" :key="i" :href="eco.href" class="subheading mx-3" target="_blank">
-            {{ eco.text }}
-          </a>
-        </v-row>
-      </v-col>
     </v-col>
   </v-row>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'mainText',
 
   data: () => ({
+    stati_data: {
+      'totalSize': '1.0',
+      'labelNum': '2'
+    },
     ecosystem: [
       {
         text: 'vuetify-loader',

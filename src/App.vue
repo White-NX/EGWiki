@@ -24,7 +24,8 @@
             <div class="form-data">
               <v-form ref="loginForm" @input="validates">
                 <v-text-field label="账号" :rules="usernameRules" hide-details="auto" v-model="username"></v-text-field>
-                <v-text-field label="密码" :rules="passwordRules" hide-details="auto" type="password" v-model="password"></v-text-field>
+                <v-text-field label="密码" :rules="passwordRules" hide-details="auto" type="password"
+                  v-model="password"></v-text-field>
                 <br>
                 <v-btn color="red darken-1" text @click="dialog = false">
                   取消
@@ -84,11 +85,11 @@ export default {
         }
       }
     },
-    validates (){
+    validates() {
       this.isvalid = this.$refs.loginForm.validate();
     },
   },
-  mounted(){
+  mounted() {
     this.validates();
   }
 };

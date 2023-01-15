@@ -1,6 +1,6 @@
 <template>
   <v-row>
-    <v-col class="main">
+    <v-col class="pageMain">
       <v-layout wrap>
         <v-flex lg8 xs12>
           <v-col class="mb-4">

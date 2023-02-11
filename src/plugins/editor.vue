@@ -11,7 +11,15 @@ export default {
   data: () => ({
     dialog: false,
     props: {
-      current: Object,
+      current: {
+        type: Number,
+        default: 0
+      },
+      // 编辑器语言（代码语言）
+      language: {
+        type: String,
+        default: 'javascript'
+      },
       // 编辑器中呈现的内容
       codes: {
         type: String,
@@ -42,17 +50,12 @@ export default {
           }
         }
       },
-      watch:{
-        current(){
-          this.monacoEditor.setValue(this.codes)
-        }
-      }
-    }
+    },
   }),
   mounted() {
     this.monacoEditor = monaco.editor.create(this.$refs.container, {
-      value: this.codes,
-      language: 'javascript',
+      value: this.$attrs.codes,
+      language: this.$attrs.language,
       theme: 'vs-dark', // 编辑器主题：vs, hc-black, or vs-dark
       editorOptions: this.editorOptions
     });
@@ -60,6 +63,12 @@ export default {
       let changeContent = this.monacoEditor.getValue()
       this.$emit('update:contentBody', changeContent)
     });
-  }
+  },
+  watch: {
+    "$attrs.current": function(){
+      this.monacoEditor.setValue(this.$attrs.codes);
+      monaco.editor.setModelLanguage(this.monacoEditor.getModel(), this.$attrs.language);
+    }
+  },
 }
 </script>

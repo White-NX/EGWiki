@@ -1,0 +1,78 @@
+.strong {
+    font-size: 22px;
+}
+
+.pageMain {
+    margin: 10px;
+}
+
+.tranShadow {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.tranShadow:hover {
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.normalShadow {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+}
+
+.striped-bg {
+    background: repeating-linear-gradient(135deg, white 0px, 60px, rgb(197, 239, 255) 60px 120px);
+}
+
+.striped-bg-warn {
+    background: repeating-linear-gradient(135deg, white 0px, 60px, rgb(253, 243, 153) 60px 120px);
+}
+
+.btnSmallText {
+    color: gray;
+    font-size: 10px;
+}
+
+.center {
+    display: grid;
+    align-items: center;
+    justify-items: center;
+}
+
+@font-face {
+    font-family: 'bender';
+    src: url('/font/bender.otf') format('opentype');
+}
+
+.bender {
+    font-family: 'bender';
+}
+
+.cuteEyes.v-card {
+    background-position: right;
+    background-size: auto 50%;
+    background-repeat: no-repeat;
+}
+
+.blurred {
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    transition: all 0.5s;
+}
+
+.v-card h1,
+.v-card h2,
+.v-card h3,
+.v-card h4,
+.v-card h5,
+.v-card h6,
+.v-card h7,
+.v-card h8,
+.v-card h9,
+.v-card h10 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+code {
+    white-space: pre-wrap;
+ }

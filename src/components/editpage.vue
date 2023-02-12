@@ -1,5 +1,6 @@
 <template>
   <v-col class="pageMain">
+
     <v-overlay :value="loadingOverlay" z-index="10">
       <v-card color="primary" dark width="320">
         <v-card-text>
@@ -8,6 +9,23 @@
         </v-card-text>
       </v-card>
     </v-overlay>
+
+    <v-dialog v-model="errorDialog" persistent max-width="320">
+      <v-card>
+        <v-card-title class="text-h5">
+          <v-icon>mdi-alert-octagon</v-icon> 工口发生
+        </v-card-title>
+        <v-card-text>
+          在加载模板文件时出现问题：{{ errorMSG }}
+        </v-card-text>
+        <v-card-text>
+          <v-btn block color="primary" outlined @click="refreshPage">刷新并重试</v-btn>
+        </v-card-text>
+        <v-card-actions>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar v-model="snackbar" timeout="4000" text :color="snackbarColor">
       {{ snackbarText }}
 
@@ -17,7 +35,16 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-layout wrap>
+
+    <v-tabs color="primary" v-model="tab">
+      <v-tab v-for="(tab, index) in tabs" :key="index" @click="setTab(index)">
+        <v-icon>{{ tab.icon }}</v-icon>{{ tab.text }}
+      </v-tab>
+    </v-tabs>
+
+    <v-divider></v-divider>
+
+    <v-layout wrap class="my-2" v-if="tab == 0">
       <v-flex lg8 xs12>
         <h1>编辑中：<b>{{ labelInfo.name }} / {{ this.files[this.selectedFile].name }}</b></h1>
         <v-alert outlined type="warning" text>
@@ -46,7 +73,7 @@
             <v-card-title>文件列表</v-card-title>
             <v-card-text>
               <v-btn-toggle dense>
-                <v-btn>
+                <v-btn @click="doCreatingFile = !doCreatingFile">
                   <v-icon>mdi-file-plus</v-icon>
                   新建文件
                 </v-btn>
@@ -69,11 +96,20 @@
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
-                <v-btn>
-                  <v-icon>mdi-content-save</v-icon>
-                  保存修改
-                </v-btn>
               </v-btn-toggle>
+              <v-card elevation="0" outlined class="my-1" v-if="doCreatingFile">
+                <v-card-text>新建文件：
+                  <v-text-field label="文件名称" hide-details="auto" :rules="fileNameRules"></v-text-field>
+                  <v-row class="my-1">
+                    <v-col cols="6" xs="12">
+                      <v-btn outlined block color="primary" @click="doCreatingFile = false;">取消</v-btn>
+                    </v-col>
+                    <v-col cols="6" xs="12">
+                      <v-btn outlined block color="success">确定</v-btn>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
               <v-list dense>
                 <v-list-item-group v-model="selectedFile" color="primary">
                   <v-list-item v-for="(item, i) in files" :key="i">
@@ -178,7 +214,7 @@
         </v-col>
       </v-flex>
     </v-layout>
-    <v-card class="my-4 striped-bg">
+    <v-card class="my-4 striped-bg" v-if="tab == 0">
       <v-card-title class="bender"><v-icon large>mdi-file-document-outline</v-icon>文档 | DOCUMENTATION</v-card-title>
       <v-card-text>
         <v-card elevation="0" outlined>
@@ -194,33 +230,36 @@
         </v-card>
       </v-card-text>
     </v-card>
+    <v-container wrap fluid v-if="tab == 1">
+      <h1>页面正在开发</h1>
+    </v-container>
   </v-col>
 </template>
 
 <script>
-import axios from 'axios';
+import axios from 'axios'
 
 function getFileType(fileName) {
-  const extension = fileName.split('.').pop();
+  const extension = fileName.split('.').pop()
   switch (extension) {
     case 'js':
-      return 'javascript';
+      return 'javascript'
     case 'css':
-      return 'css';
+      return 'css'
     case 'md':
-      return 'markdown';
+      return 'markdown'
     case 'json':
-      return 'json';
+      return 'json'
     default:
-      return 'text';
+      return 'text'
   }
 }
 
 function showSnackBar(that, content, color = 'success') {
 
-  that.snackbarColor = color;
-  that.snackbarText = content;
-  that.snackbar = true;
+  that.snackbarColor = color
+  that.snackbarText = content
+  that.snackbar = true
 
 }
 
@@ -232,6 +271,25 @@ export default {
     PICdialog: false,
     deleteFileDialog: false,
     prLabelDialog: false,
+    errorDialog: false,
+
+    errorMSG: '',
+
+    tab: 0,
+    tabs: [
+      {
+        icon: 'mdi-code-brackets',
+        text: '编辑',
+      },
+      {
+        icon: 'mdi-source-pull',
+        text: '修改记录'
+      },
+      {
+        icon: 'mdi-cog',
+        text: '设置'
+      }
+    ],
 
     snackbar: false,
     snackbarText: '',
@@ -263,60 +321,88 @@ export default {
 
     documentation: '<i>文档正在加载……</i>',
 
-    isLabelDefined: false,
+    doCreatingFile: false,
 
     compareChange: {
       onlyInChanged: '',
       onlyInOrigin: ''
-    }
+    },
+
+    fileNameRules: [
+      value => {
+        if (!value) return false
+
+        const regex = /^[^\\/:*?"<>|]+$/
+        const windowsKeywords = ['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9']
+
+        if (!regex.test(value)) return '不符合文件名规则，请勿输入特殊字符。'
+        if (windowsKeywords.includes(value.toUpperCase())) return '文件名不能是系统关键字'
+        if (value.length > 50) return '文件名不能超过50个字符'
+
+        return true
+      }
+    ],
+    isFileNameVaild: false
   }),
   methods: {
+    refreshPage() {
+
+      window.location.reload();
+
+    },
+
+    setTab(index) {
+
+      this.tab = index;
+
+    },
+
     isDeclarationMatch() {
       console.log(this.declaration)
 
       if (this.declaration == 'delete:' + this.labelInfo.name) {
 
-        this.declarationMatch = true;
+        this.declarationMatch = true
 
       } else {
 
-        this.declarationMatch = false;
+        this.declarationMatch = false
 
       }
     },
 
     handleUpdateContentBody(contents) {
 
-      sessionStorage.setItem(this.files[this.selectedFile].name, contents);
+      sessionStorage.setItem(this.files[this.selectedFile].name, contents)
 
     },
 
     deleteLabelFile() {
 
-      const label = this.$route.query.label;
+      const label = this.$route.query.label
 
-      this.loadingOverlay = true;
-      this.deleteFileDialog = false;
+      this.loadingOverlay = true
+      this.deleteFileDialog = false
 
-      var fileName = this.files[this.selectedFile].name;
+      var fileName = this.files[this.selectedFile].name
 
       if (fileName == 'config.json') {
 
-        this.loadingOverlay = false;
+        this.loadingOverlay = false
         showSnackBar(this, '错误：配置文件不可删除', 'error')
-        return;
+        return
 
       }
 
-      var files = JSON.parse(sessionStorage.getItem('files'));
-      files = files.filter(f => f.name != fileName);
+      var files = JSON.parse(sessionStorage.getItem('files'))
+      files = files.filter(f => f.name != fileName)
 
-      this.files = files;
-      this.selectedFile--;
-      sessionStorage.setItem('files', JSON.stringify(files));
+      this.files = files
+      this.selectedFile--
+      sessionStorage.setItem('files', JSON.stringify(files))
 
       showSnackBar(this, '文件在此次修改提交后将被删除。', 'success')
-      this.loadingOverlay = false;
+      this.loadingOverlay = false
 
 
       /*
@@ -327,32 +413,38 @@ export default {
 
         if (res.data.errorCode == 200) {
 
-         showSnackBar(this, '文件删除成功', 'success');
-         this.loadingOverlay = false;
+         showSnackBar(this, '文件删除成功', 'success')
+         this.loadingOverlay = false
 
-         this.files = this.files.filter(f => f.name != fileName);
-         this.selectedFile --;
+         this.files = this.files.filter(f => f.name != fileName)
+         this.selectedFile --
 
         }else if(res.data.errorCode == 401){
 
-          showSnackBar(this, '删除失败，登录状态无效', 'error');
-          this.loadingOverlay = false;
+          showSnackBar(this, '删除失败，登录状态无效', 'error')
+          this.loadingOverlay = false
 
         }else{
 
           showSnackBar(this, '删除失败，服务器端报告了错误：' + res.data.detail, 'error')
-          this.loadingOverlay = false;
+          this.loadingOverlay = false
 
         }
 
       })
       .catch((e)=>{
 
-        showSnackBar(this, '文件删除失败：'+e, 'error');
-        this.loadingOverlay = false; 
+        showSnackBar(this, '文件删除失败：'+e, 'error')
+        this.loadingOverlay = false 
 
       })
       */
+
+    },
+
+    addLabelFile() {
+
+      //
 
     },
 
@@ -363,16 +455,19 @@ export default {
     },
   },
   mounted() {
+
+    this.loadingOverlay = true;
+
     //请求API获取页面内容
-    const label = this.$route.query.label;
-    this.labelInfo.name = label;
+    const label = this.$route.query.label
+    this.labelInfo.name = label
 
     if (typeof label == 'undefined' || label == '') {
 
-      window.location.href = '/#/search';
-      this.documentation = '<b>错误：没有指定label。</b>';
+      window.location.href = '/#/search'
+      this.documentation = '<b>错误：没有指定label。</b>'
 
-      return;
+      return
 
     }
 
@@ -380,15 +475,19 @@ export default {
       .get(`${this.$globalApiURL}/label?type=getLabelTree&name=${label}`)
       .then((res) => {
 
-        var rawTree = res.data.data.children;
-        this.files = rawTree;
+        var rawTree = res.data.data.children
+        this.files = rawTree
 
-        sessionStorage.setItem('files', JSON.stringify(this.files));
-        sessionStorage.setItem('files_bak', JSON.stringify(this.files));
+        sessionStorage.setItem('files', JSON.stringify(this.files))
+        sessionStorage.setItem('files_bak', JSON.stringify(this.files))
+
+        this.loadingOverlay = false
 
       })
       .catch((error) => {
-        showSnackBar(this, '错误：文件列表加载失败:' + e, 'error');
+        showSnackBar(this, '错误：文件列表加载失败:' + error, 'error')
+
+        this.loadingOverlay = false;
       })
 
     axios
@@ -396,17 +495,18 @@ export default {
       .then((res) => {
 
         if (typeof res.data.errorCode != 'undefined') {
-          this.documentation = '<b>错误：此label没有文档文件。</b>'
-          return;
+          this.documentation = '<b>此label没有文档文件。</b>'
+          return
         }
 
-        this.documentation = res.data;
+        this.documentation = res.data
       })
       .catch((error) => {
-        this.documentation = '<b>文档加载失败。</b><br>错误信息：' + error;
-        showSnackBar(this, '文档加载失败。' + e, 'error');
 
-      });
+        this.documentation = '<b>文档加载失败。</b><br>错误信息：' + error
+        showSnackBar(this, '文档加载失败。' + error, 'error')
+
+      })
 
 
 
@@ -414,30 +514,31 @@ export default {
       .get(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=config.json`)
       .then((res) => {
 
-        this.lang = 'json';
-        this.content = JSON.stringify(res.data);
+        this.lang = 'json'
+        this.content = JSON.stringify(res.data)
         this.current++
 
       })
-      .catch((error) => (this.content = `console.error('An error occurred. Error message: ${error}')`))
+      .catch((error) => {
 
-      //获取修改项
-      this.compareChange.onlyInChanged = compareChange().onlyInChanged;
-      this.compareChange.onlyInOrigin = compareChange.onlyInOrigin;
+        this.errorMSG = error;
+        this.errorDialog = true;
+
+      })
   },
   watch: {
     selectedFile: function () {
-      const label = this.$route.query.label;
+      const label = this.$route.query.label
 
-      var sessionContents = sessionStorage.getItem(this.files[this.selectedFile].name);
+      var sessionContents = sessionStorage.getItem(this.files[this.selectedFile].name)
 
       if (sessionContents != null) {
 
-        this.lang = getFileType(this.files[this.selectedFile].name);
-        this.content = sessionContents;
-        this.current++;
+        this.lang = getFileType(this.files[this.selectedFile].name)
+        this.content = sessionContents
+        this.current++
 
-        return;
+        return
 
       }
 
@@ -451,18 +552,18 @@ export default {
             typeof res.data != 'object'
           ) {
 
-            res.data = res.data.toString();
+            res.data = res.data.toString()
 
           }
 
-          this.lang = getFileType(this.files[this.selectedFile].name);
+          this.lang = getFileType(this.files[this.selectedFile].name)
           if (this.lang == 'json') {
 
-            this.content = JSON.stringify(res.data);
+            this.content = JSON.stringify(res.data)
 
           } else {
 
-            this.content = res.data;
+            this.content = res.data
 
           }
 
@@ -477,18 +578,16 @@ export default {
 
 function compareChange() {
 
-  const origin = sessionStorage.getItem('files_bak');
-  const changed = sessionStorage.getItem('files');
+  const origin = JSON.parse(sessionStorage.getItem('files_bak'))
+  const changed = JSON.parse(sessionStorage.getItem('files'))
 
-  const onlyInOrigin = origin.filter(item => !b.includes(item));
-  const onlyInChanged = changed.filter(item => !a.includes(item));
-
-  console.log(`[${onlyInOrigin}, ${onlyInChanged}]`)
+  const deleted = origin.filter(item => !changed.some(c => c.name === item.name));
+  const added = changed.filter(item => !origin.some(o => o.name === item.name));
 
   return {
-    onlyInChanged: onlyInChanged,
-    onlyInOrigin: onlyInOrigin
-  };
+    deleted: deleted,
+    added: added
+  }
 
 }
 </script>

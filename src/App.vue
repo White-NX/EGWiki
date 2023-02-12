@@ -99,8 +99,8 @@
 </template>
 
 <script>
-import axios from 'axios';
-import Cookies from 'js-cookie';
+import axios from 'axios'
+import Cookies from 'js-cookie'
 
 export default {
   name: 'App',
@@ -131,61 +131,61 @@ export default {
   computed: {
     isUserLogin() {
       if (Cookies.get('username') != undefined) {
-        return true;
+        return true
       } else {
-        return false;
+        return false
       }
     },
     loginUsername() {
 
-      return Cookies.get('username');
+      return Cookies.get('username')
 
     }
   },
   methods: {
     submitForm() {
-      console.log('try to login');
-      this.isvalid = true;
+      console.log('try to login')
+      this.isvalid = true
       axios.post(this.$globalApiURL + 'auth?type=login', {
         username: this.username,
         password: this.password
       }).then(res => {
 
-        var obj = res.data;
+        var obj = res.data
 
         switch (obj.errorCode) {
           case '011/012':
-            this.loginFaildReason = '用户名或密码错误';
-            this.loginFaild = true;
+            this.loginFaildReason = '用户名或密码错误'
+            this.loginFaild = true
 
-            break;
+            break
           case '200':
-            this.loginFaild = false;
-            this.loginSuccess = true;
+            this.loginFaild = false
+            this.loginSuccess = true
 
-            Cookies.set('username', obj.username, { expires: 7 });
-            Cookies.set('sessionKey', obj.sessionKey, { expires: 7 });
+            Cookies.set('username', obj.username, { expires: 7 })
+            Cookies.set('sessionKey', obj.sessionKey, { expires: 7 })
 
-            location.reload(true);
-            break;
+            location.reload(true)
+            break
         }
 
       }).catch((e) => {
         if (e.response != 200) {
-          this.loginFaild = true;
-          this.loginFaildReason = '系统内部错误';
+          this.loginFaild = true
+          this.loginFaildReason = '系统内部错误'
         }
       })
     },
     validates() {
-      this.isvalid = this.$refs.loginForm.validate();
+      this.isvalid = this.$refs.loginForm.validate()
     },
     logout() {
-      Cookies.remove('username');
-      Cookies.remove('sessionKey');
+      Cookies.remove('username')
+      Cookies.remove('sessionKey')
 
-      location.reload(true);
+      location.reload(true)
     }
   }
-};
+}
 </script>

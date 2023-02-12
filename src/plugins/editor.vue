@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import * as monaco from 'monaco-editor';
+import * as monaco from 'monaco-editor'
 export default {
   name: 'editMain',
   data: () => ({
@@ -58,16 +58,16 @@ export default {
       language: this.$attrs.language,
       theme: 'vs-dark', // 编辑器主题：vs, hc-black, or vs-dark
       editorOptions: this.editorOptions
-    });
+    })
     this.monacoEditor.onDidChangeModelContent((event) => {
       let changeContent = this.monacoEditor.getValue()
       this.$emit('update:contentBody', changeContent)
-    });
+    })
   },
   watch: {
     "$attrs.current": function(){
-      this.monacoEditor.setValue(this.$attrs.codes);
-      monaco.editor.setModelLanguage(this.monacoEditor.getModel(), this.$attrs.language);
+      this.monacoEditor.setValue(this.$attrs.codes)
+      monaco.editor.setModelLanguage(this.monacoEditor.getModel(), this.$attrs.language)
     }
   },
 }

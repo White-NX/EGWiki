@@ -44,22 +44,32 @@
 
     <v-divider></v-divider>
 
-    <v-layout wrap class="my-2" v-if="tab == 0">
+    <v-layout wrap class="my-2">
       <v-flex lg8 xs12>
         <h1>编辑中：<b>{{ labelInfo.name }} / {{ this.files[this.selectedFile].name }}</b></h1>
-        <v-alert outlined type="warning" text>
-          <h3>你正在编辑并非你创建的label</h3>
-          一些意外修改可能会造成问题，请确保在明确此次改动的目的和方式基础上进行修改。
-        </v-alert>
-        <v-alert outlined type="info" text v-if="labelInfo.uniUse == true">
-          <h3>{{ labelInfo.name }}被标记为强泛用性</h3>
-          这意味着该模板被广泛使用，稳定性和实用性已经被确认，无需大规模更改。
-        </v-alert>
-        <v-alert outlined type="info" text v-if="labelInfo.isLock == true">
-          <h3>{{ labelInfo.name }}正在被他人(username)编辑</h3>
-          如果你执意进行编辑可能会造成编辑冲突，如果你有编辑需要，可以将编辑请求告知此时的编辑人员或者等待对方编辑完毕。
-        </v-alert>
         <v-divider></v-divider>
+        <v-expansion-panels>
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              页面焦点
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-alert outlined type="warning" text>
+                <h3>你正在编辑并非你创建的label</h3>
+                一些意外修改可能会造成问题，请确保在明确此次改动的目的和方式基础上进行修改。
+              </v-alert>
+              <v-alert outlined type="info" text v-if="labelInfo.uniUse == true">
+                <h3>{{ labelInfo.name }}被标记为强泛用性</h3>
+                这意味着该模板被广泛使用，稳定性和实用性已经被确认，无需大规模更改。
+              </v-alert>
+              <v-alert outlined type="info" text v-if="labelInfo.isLock == true">
+                <h3>{{ labelInfo.name }}正在被他人(username)编辑</h3>
+                如果你执意进行编辑可能会造成编辑冲突，如果你有编辑需要，可以将编辑请求告知此时的编辑人员或者等待对方编辑完毕。
+              </v-alert>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+        <br />
         <monaco :codes="content" :current="current" v-if="current != undefined" :language="lang"
           v-on:update:contentBody="handleUpdateContentBody"></monaco>
       </v-flex>
@@ -67,17 +77,29 @@
       <v-flex lg4 xs12>
         <v-col class="rightSideBar">
           <v-card elevation="0" outlined class="my-4">
+            <v-card-title>关于</v-card-title>
+            <v-card-text style="font-size:12pt; color:black">
+              <v-chip color="indigo" text-color="white" small class="my-1">
+                <v-avatar left>
+                  <v-icon>mdi-account-circle</v-icon>
+                </v-avatar>
+                {{ labelDetails.author }}
+              </v-chip><br />
+              {{ labelDetails.description }}
+            </v-card-text>
+          </v-card>
+          <v-card elevation="0" outlined class="my-4">
             <template slot="progress">
               <v-progress-linear color="deep-purple" height="10" indeterminate></v-progress-linear>
             </template>
             <v-card-title>文件列表</v-card-title>
             <v-card-text>
               <v-btn-toggle dense>
-                <v-btn @click="doCreatingFile = !doCreatingFile">
+                <v-btn @click="doAddingFile = !doAddingFile">
                   <v-icon>mdi-file-plus</v-icon>
                   新建文件
                 </v-btn>
-                <v-dialog v-model="deleteFileDialog" persistent max-width="320">
+                <v-dialog v-model="doDeletingFile" persistent max-width="320">
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn depressed v-bind="attrs" v-on="on">
                       <v-icon>mdi-delete</v-icon>删除文件
@@ -90,22 +112,23 @@
                     <v-card-text>你确认删除{{ this.files[this.selectedFile].name }}吗？此次操作<b>将在修改提交后进行。</b></v-card-text>
                     <v-card-text>
                       <v-btn block color="error" outlined @click="deleteLabelFile">删除</v-btn><br>
-                      <v-btn block color="success" outlined @click="deleteFileDialog = false">还是算了</v-btn>
+                      <v-btn block color="success" outlined @click="doDeletingFile = false">还是算了</v-btn>
                     </v-card-text>
                     <v-card-actions>
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
               </v-btn-toggle>
-              <v-card elevation="0" outlined class="my-1" v-if="doCreatingFile">
+              <v-card elevation="0" outlined class="my-1" v-if="doAddingFile">
                 <v-card-text>新建文件：
-                  <v-text-field label="文件名称" hide-details="auto" :rules="fileNameRules"></v-text-field>
+                  <v-text-field label="文件名称" hide-details="auto" :rules="fileNameRules" @input="checkFileName"
+                    ref="fileName" v-model.trim="fileName"></v-text-field>
                   <v-row class="my-1">
                     <v-col cols="6" xs="12">
-                      <v-btn outlined block color="primary" @click="doCreatingFile = false;">取消</v-btn>
+                      <v-btn outlined block color="primary" @click="doAddingFile = false;">取消</v-btn>
                     </v-col>
                     <v-col cols="6" xs="12">
-                      <v-btn outlined block color="success">确定</v-btn>
+                      <v-btn outlined block color="success" @click="addFile" :disabled="isFileNameVaild">确定</v-btn>
                     </v-col>
                   </v-row>
                 </v-card-text>
@@ -157,7 +180,7 @@
                           <v-card-text>
                             <v-text-field hide-details="auto" v-model="declaration"
                               v-on:input="isDeclarationMatch"></v-text-field><br>
-                            <v-btn block color="error" outlined :disabled="!declarationMatch">我已知晓行动的后果</v-btn><br>
+                            <v-btn block color="error" outlined :disabled="!declarationMatch">行动吧！</v-btn><br>
                             <v-btn block color="success" outlined @click="deletedialog = false">还是算了</v-btn>
                           </v-card-text>
                           <v-card-actions>
@@ -174,7 +197,7 @@
                     <v-flex lg4 xs12>
                       <v-dialog v-model="prLabelDialog" persistent max-width="320">
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn depressed color="success" v-bind="attrs" v-on="on">
+                          <v-btn depressed color="success" v-bind="attrs" v-on="on" @click="labelChanged">
                             提交label
                           </v-btn>
                         </template>
@@ -182,12 +205,19 @@
                           <v-card-title class="text-h5">
                             提交
                           </v-card-title>
-                          <v-card-text>你将要提交以下修改<b><br />注意：没有被保存的修改不会被提交，请仔细确认</b>
+                          <v-card-text>你将要提交以下修改：<br /><br />
 
-                            {{ compareChange.onlyInOrigin }}
+                            <b>删除：</b><br />
+                            <ul>
+                              <li v-for="(item, i) in compareChange.deleted" :key="i">{{ item.name }}</li>
+                            </ul><br />
+                            <b>新增：</b><br />
+                            <ul>
+                              <li v-for="(item, i) in compareChange.added" :key="i">{{ item.name }}</li>
+                            </ul>
                           </v-card-text>
                           <v-card-text>
-                            <v-btn block color="primary" outlined>提交</v-btn><br>
+                            <v-btn block color="primary" outlined @click="update">提交</v-btn><br>
                             <v-btn block color="success" outlined @click="prLabelDialog = false">还是算了</v-btn>
                           </v-card-text>
                           <v-card-actions>
@@ -214,7 +244,7 @@
         </v-col>
       </v-flex>
     </v-layout>
-    <v-card class="my-4 striped-bg" v-if="tab == 0">
+    <v-card class="my-4 striped-bg">
       <v-card-title class="bender"><v-icon large>mdi-file-document-outline</v-icon>文档 | DOCUMENTATION</v-card-title>
       <v-card-text>
         <v-card elevation="0" outlined>
@@ -230,9 +260,6 @@
         </v-card>
       </v-card-text>
     </v-card>
-    <v-container wrap fluid v-if="tab == 1">
-      <h1>页面正在开发</h1>
-    </v-container>
   </v-col>
 </template>
 
@@ -269,7 +296,7 @@ export default {
     dialog: false,
     deletedialog: false,
     PICdialog: false,
-    deleteFileDialog: false,
+    doDeletingFile: false,
     prLabelDialog: false,
     errorDialog: false,
 
@@ -286,10 +313,18 @@ export default {
         text: '修改记录'
       },
       {
+        icon: 'mdi-bug',
+        text: '问题'
+      },
+      {
         icon: 'mdi-cog',
         text: '设置'
       }
     ],
+    labelDetails: {
+      description: '',
+      author: '',
+    },
 
     snackbar: false,
     snackbarText: '',
@@ -321,11 +356,13 @@ export default {
 
     documentation: '<i>文档正在加载……</i>',
 
-    doCreatingFile: false,
+    doAddingFile: false,
+
+    fileName: '',
 
     compareChange: {
-      onlyInChanged: '',
-      onlyInOrigin: ''
+      deleted: '',
+      added: ''
     },
 
     fileNameRules: [
@@ -337,14 +374,30 @@ export default {
 
         if (!regex.test(value)) return '不符合文件名规则，请勿输入特殊字符。'
         if (windowsKeywords.includes(value.toUpperCase())) return '文件名不能是系统关键字'
-        if (value.length > 50) return '文件名不能超过50个字符'
+        if (value.length > 30) return '文件名不能超过30个字符'
+
+        var files = JSON.parse(sessionStorage.getItem('files'))
+        for (var i = 0; i < files.length; i++) {
+
+          if (value == files[i].name) {
+            return '此文件已存在。'
+          }
+
+        }
 
         return true
       }
     ],
-    isFileNameVaild: false
+    isFileNameVaild: true
+
   }),
   methods: {
+    checkFileName() {
+
+      this.isFileNameVaild = !this.$refs.fileName.validate()
+
+    },
+
     refreshPage() {
 
       window.location.reload();
@@ -379,10 +432,7 @@ export default {
 
     deleteLabelFile() {
 
-      const label = this.$route.query.label
-
-      this.loadingOverlay = true
-      this.deleteFileDialog = false
+      this.doDeletingFile = false
 
       var fileName = this.files[this.selectedFile].name
 
@@ -402,64 +452,98 @@ export default {
       sessionStorage.setItem('files', JSON.stringify(files))
 
       showSnackBar(this, '文件在此次修改提交后将被删除。', 'success')
-      this.loadingOverlay = false
 
+    },
 
-      /*
-      axios.delete(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=${fileName}`, {
-        withCredentials: true,
+    addFile() {
+
+      this.doAddingFile = false
+
+      var files = JSON.parse(sessionStorage.getItem('files'))
+      files.push({
+        name: this.fileName,
+        type: 'file'
       })
-      .then((res) => {
+      this.files = files;
+      sessionStorage.setItem('files', JSON.stringify(files))
 
-        if (res.data.errorCode == 200) {
+      sessionStorage.setItem(this.fileName, '');
 
-         showSnackBar(this, '文件删除成功', 'success')
-         this.loadingOverlay = false
+      showSnackBar(this, this.fileName + '将在此次修改提交后将被创建。', 'success')
 
-         this.files = this.files.filter(f => f.name != fileName)
-         this.selectedFile --
+      this.fileName = ''
 
-        }else if(res.data.errorCode == 401){
+    },
 
-          showSnackBar(this, '删除失败，登录状态无效', 'error')
-          this.loadingOverlay = false
+    labelChanged() {
 
-        }else{
+      //文件增删
+      const origin = JSON.parse(sessionStorage.getItem('files_bak'))
+      const changed = JSON.parse(sessionStorage.getItem('files'))
 
-          showSnackBar(this, '删除失败，服务器端报告了错误：' + res.data.detail, 'error')
-          this.loadingOverlay = false
+      this.compareChange.deleted = origin.filter(item => !changed.some(c => c.name === item.name))
+      this.compareChange.added = changed.filter(item => !origin.some(o => o.name === item.name))
+
+    },
+
+    update() {
+
+      const label = this.$route.params.content
+
+      for (var i = 0; i < this.files.length; i++) {
+
+        var updatedFileName = this.files[i].name
+        var updatedFile = sessionStorage.getItem(updatedFileName)
+
+        if (updatedFile != null) {
+
+          axios
+            .post(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=${updatedFileName}`, 
+            updatedFile,
+            {
+              withCredentials: true
+            })
+            .then((res) => {
+
+              if (res.data.errorCode == 200) {
+
+                console.log('Successfully updated file' + updatedFileName)
+
+              } else {
+
+                throw new Error(res.data.errorCode)
+
+              }
+
+            })
+            .catch((error) => {
+
+              if (error == 401) {
+
+                showSnackBar(this, '登录无效', 'error')
+
+              } else {
+
+                showSnackBar(this, '提交失败，错误代码：' + error, 'error')
+
+              }
+
+            })
 
         }
 
-      })
-      .catch((e)=>{
+      }
 
-        showSnackBar(this, '文件删除失败：'+e, 'error')
-        this.loadingOverlay = false 
+    }
 
-      })
-      */
 
-    },
-
-    addLabelFile() {
-
-      //
-
-    },
-
-    prLabelChange() {
-
-      //
-
-    },
   },
   mounted() {
 
     this.loadingOverlay = true;
 
     //请求API获取页面内容
-    const label = this.$route.query.label
+    const label = this.$route.params.content
     this.labelInfo.name = label
 
     if (typeof label == 'undefined' || label == '') {
@@ -475,8 +559,7 @@ export default {
       .get(`${this.$globalApiURL}/label?type=getLabelTree&name=${label}`)
       .then((res) => {
 
-        var rawTree = res.data.data.children
-        this.files = rawTree
+        this.files = res.data.data.children
 
         sessionStorage.setItem('files', JSON.stringify(this.files))
         sessionStorage.setItem('files_bak', JSON.stringify(this.files))
@@ -485,9 +568,19 @@ export default {
 
       })
       .catch((error) => {
-        showSnackBar(this, '错误：文件列表加载失败:' + error, 'error')
 
-        this.loadingOverlay = false;
+        if (error instanceof TypeError && error.message.includes('children')) { //没有输出正确的数据格式，一般就是404
+
+          this.errorMSG = '找不到label.'
+
+        } else {
+
+          this.errorMSG = error
+
+        }
+
+        this.errorDialog = true
+        this.loadingOverlay = false
       })
 
     axios
@@ -518,17 +611,19 @@ export default {
         this.content = JSON.stringify(res.data)
         this.current++
 
+        this.labelDetails.author = res.data.author
+        this.labelDetails.description = res.data.description
+
       })
       .catch((error) => {
 
-        this.errorMSG = error;
-        this.errorDialog = true;
+        showSnackBar(this, '模板加载失败。' + error, 'error');
 
       })
   },
   watch: {
     selectedFile: function () {
-      const label = this.$route.query.label
+      const label = this.$route.params.content
 
       var sessionContents = sessionStorage.getItem(this.files[this.selectedFile].name)
 

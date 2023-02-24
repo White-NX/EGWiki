@@ -9,7 +9,7 @@ import componentsInstall from './plugins/install'
 
 Vue.config.productionTip = false
 
-Vue.prototype.$globalApiURL = 'http://127.0.0.1:3000'
+Vue.prototype.$globalApiURL = 'https://api.eyling.top'
 
 new Vue({
   router,

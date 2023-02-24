@@ -19,7 +19,7 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   },
   {
-    path: '/edit',
+    path: '/edit/:content',
     name: 'edit',
     component: () => import(/* webpackChunkName: "edit" */ '../views/EditView.vue')
   },

@@ -108,55 +108,54 @@
               </v-container>
             </v-card-text>
           </v-card>
-        </v-col>
-
-        <v-card elevation outlined class="normalShadow">
-          <v-card-title>Label总览
-          </v-card-title>
-          <v-container wrap fluid>
-            <v-row>
-              <v-col md="6" sm="12" xs="6">
-                <v-card>
-                  <v-card-title><v-icon class="mx-1">mdi-information-outline</v-icon>信息与告示</v-card-title>
-                  <v-card-text>
-                    <v-card elevation="0" outlined class="striped-bg-warn my-1">
-                      <v-card-title class="bender"><v-icon
-                          class="mx-1">mdi-alert-outline</v-icon>ANNOUNCEMENT</v-card-title>
-                      <v-card-text style="color: black">
-                        一般信息类模板都会被<b>大规模使用</b>，盲目地修改会造成各种问题，故遇到问题需要修改时，建议在群组内进行公开讨论。
-                        <v-btn block large outlined elevation text
-                          class="my-2"><v-icon>mdi-account-group-outline</v-icon>进入讨论页</v-btn>
-                      </v-card-text>
-                    </v-card>
-                    <v-divider class="my-2"></v-divider>
-                    <div style="color: black">
+          <v-card elevation outlined class="normalShadow">
+            <v-card-title>Label总览
+            </v-card-title>
+            <v-container wrap fluid>
+              <v-row>
+                <v-col md="6" sm="12" xs="6">
+                  <v-card>
+                    <v-card-title><v-icon class="mx-1">mdi-information-outline</v-icon>信息与告示</v-card-title>
+                    <v-card-text>
+                      <v-card elevation="0" outlined class="striped-bg-warn my-1">
+                        <v-card-title class="bender"><v-icon
+                            class="mx-1">mdi-alert-outline</v-icon>ANNOUNCEMENT</v-card-title>
+                        <v-card-text style="color: black">
+                          一般信息类模板都会被<b>大规模使用</b>，盲目地修改会造成各种问题，故遇到问题需要修改时，建议在群组内进行公开讨论。
+                          <v-btn block large outlined elevation text
+                            class="my-2"><v-icon>mdi-account-group-outline</v-icon>进入讨论页</v-btn>
+                        </v-card-text>
+                      </v-card>
+                      <v-divider class="my-2"></v-divider>
+                      <div style="color: black">
+                        <ul>
+                          <li>页面告示</li>
+                          <li>条目信息</li>
+                        </ul>
+                      </div>
+                      <v-btn block large outlined elevation
+                        class="my-2"><v-icon>mdi-package-variant</v-icon>查看衍生模板</v-btn>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+                <v-col md="6" sm="12" xs="6">
+                  <v-card>
+                    <v-card-title><v-icon class="mx-1">mdi-tools</v-icon>页面与操作</v-card-title>
+                    <v-card-text style="color:black">
                       <ul>
-                        <li>页面告示</li>
-                        <li>条目信息</li>
+                        <li>页面问题报告</li>
+                        <li>挂删</li>
                       </ul>
-                    </div>
-                    <v-btn block large outlined elevation
-                      class="my-2"><v-icon>mdi-package-variant</v-icon>查看衍生模板</v-btn>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-              <v-col md="6" sm="12" xs="6">
-                <v-card>
-                  <v-card-title><v-icon class="mx-1">mdi-tools</v-icon>页面与操作</v-card-title>
-                  <v-card-text style="color:black">
-                    <ul>
-                      <li>页面问题报告</li>
-                      <li>挂删</li>
-                    </ul>
-                    <v-btn block large outlined elevation
-                      class="my-2"><v-icon>mdi-package-variant</v-icon>查看衍生模板</v-btn>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-container>
-          <br>
-        </v-card>
+                      <v-btn block large outlined elevation
+                        class="my-2"><v-icon>mdi-package-variant</v-icon>查看衍生模板</v-btn>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-container>
+            <br>
+          </v-card>
+        </v-col>
       </div>
     </v-row>
   </v-container>

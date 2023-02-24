@@ -70,10 +70,7 @@
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
-      <v-list dense nav 
-      v-for="item in items"
-      :key="item.title"
-      link>
+      <v-list dense nav v-for="item in items" :key="item.title" link>
         <v-list-item :href="item.url">
           <v-list-item-icon><v-icon>{{ item.icon }}</v-icon></v-list-item-icon>
           <v-list-item-content>
@@ -88,13 +85,10 @@
     </v-main>
 
     <v-footer padless>
-    <v-col
-      class="text-center"
-      cols="12"
-    >
-      {{ new Date().getFullYear() }} — <strong>Eyling GalgameWiki</strong>
-    </v-col>
-  </v-footer>
+      <v-col class="text-center" cols="12">
+        {{ new Date().getFullYear() }} — <strong>Eyling GalgameWiki</strong>
+      </v-col>
+    </v-footer>
   </v-app>
 </template>
 
@@ -124,8 +118,8 @@ export default {
 
     drawer: false,
     items: [
-      { title: '控制台', icon: 'mdi-view-dashboard', url:'/#/'},
-      { title: '关于', icon: 'mdi-information-outline', url:'/#/'},
+      { title: '主页', icon: 'mdi-home-outline', url: '/#/' },
+      { title: '关于', icon: 'mdi-information-outline', url: '/#/about' },
     ]
   }),
   computed: {
@@ -146,7 +140,7 @@ export default {
     submitForm() {
       console.log('try to login')
       this.isvalid = true
-      axios.post(this.$globalApiURL + 'auth?type=login', {
+      axios.post(this.$globalApiURL + '/auth?type=login', {
         username: this.username,
         password: this.password
       }).then(res => {
@@ -173,7 +167,7 @@ export default {
       }).catch((e) => {
         if (e.response != 200) {
           this.loginFaild = true
-          this.loginFaildReason = '系统内部错误'
+          this.loginFaildReason = e
         }
       })
     },

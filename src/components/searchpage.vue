@@ -22,7 +22,8 @@
           <v-card elevation-0 outlined>
             <v-card-title>
               <a :href="'/#/edit?label=' + item.name">{{ item.name }}</a><v-icon small
-                class="mx-1">mdi-open-in-new</v-icon> <v-chip color="indigo" text-color="white" small>
+                class="mx-1">mdi-open-in-new</v-icon>
+              <v-chip color="indigo" text-color="white" small>
                 <v-avatar left>
                   <v-icon>mdi-account-circle</v-icon>
                 </v-avatar>
@@ -50,7 +51,7 @@ export default {
 
   data: () => ({
     result_number: 1145141,
-    page:1,
+    page: 1,
     items: [
       {
         name: 'heimu',

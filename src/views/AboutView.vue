@@ -1,5 +1,10 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
-  </div>
+  <v-container fluid>
+    <v-row>
+      <div class="pageMain">
+        <h1>DEBUG</h1>
+        <p>{{ JSON.stringify(this.$store.state) }}</p>
+      </div>
+    </v-row>
+  </v-container>
 </template>

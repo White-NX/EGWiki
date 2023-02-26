@@ -46,7 +46,22 @@
 
     <v-layout wrap class="my-2">
       <v-flex lg8 xs12>
-        <h1>编辑中：<b>{{ labelInfo.name }} / {{ this.files[this.selectedFile].name }}</b></h1>
+        <h1>编辑中：<b>{{ labelInfo.name }} / {{ files[selectedFile].name }}</b></h1>
+
+        <v-card elevation="0" outlined class="striped-bg-warn my-1"
+          v-if="labelInfo.lock.state == true && labelInfo.lock.originator != userStatus.username">
+          <v-card-title class="bender"><v-icon class="mx-1">mdi-alert-outline</v-icon>ANNOUNCEMENT：此模板已经被锁定</v-card-title>
+          <v-card-text style="color: black">
+            为了防止编辑冲突，你暂时无法编辑此模板，请待会再试。<br />
+            <i>本次锁定是由{{ labelInfo.lock.originator }}于{{ timestampToDateTime(labelInfo.lock.time) }}发起的。<br />
+              当前，模板已经锁定了{{ (new Date().getTime() - labelInfo.lock.time).toLocaleString()
+              }}秒，当锁定时间超过10,800秒（3小时）时，你可以强制解除锁定。</i>
+            <v-btn block large outlined elevation class="my-2" v-if="new Date().getTime() - labelInfo.lock.time > 10800">
+              <v-icon>mdi-lock-open-outline</v-icon>强制解除锁定
+            </v-btn>
+          </v-card-text>
+        </v-card>
+
         <v-divider></v-divider>
         <v-expansion-panels>
           <v-expansion-panel>
@@ -61,10 +76,6 @@
               <v-alert outlined type="info" text v-if="labelInfo.uniUse == true">
                 <h3>{{ labelInfo.name }}被标记为强泛用性</h3>
                 这意味着该模板被广泛使用，稳定性和实用性已经被确认，无需大规模更改。
-              </v-alert>
-              <v-alert outlined type="info" text v-if="labelInfo.isLock == true">
-                <h3>{{ labelInfo.name }}正在被他人(username)编辑</h3>
-                如果你执意进行编辑可能会造成编辑冲突，如果你有编辑需要，可以将编辑请求告知此时的编辑人员或者等待对方编辑完毕。
               </v-alert>
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -111,7 +122,7 @@
                     </v-card-title>
                     <v-card-text>你确认删除{{ this.files[this.selectedFile].name }}吗？此次操作<b>将在修改提交后进行。</b></v-card-text>
                     <v-card-text>
-                      <v-btn block color="error" outlined @click="deleteLabelFile">删除</v-btn><br>
+                      <v-btn block color="error" outlined @click="deleteFile">删除</v-btn><br>
                       <v-btn block color="success" outlined @click="doDeletingFile = false">还是算了</v-btn>
                     </v-card-text>
                     <v-card-actions>
@@ -195,7 +206,7 @@
                       <b>提交label</b><br>将此次修改作为更新进行提交
                     </v-flex>
                     <v-flex lg4 xs12>
-                      <v-dialog v-model="prLabelDialog" persistent max-width="320">
+                      <v-dialog v-model="doPullLabel" persistent max-width="320">
                         <template v-slot:activator="{ on, attrs }">
                           <v-btn depressed color="success" v-bind="attrs" v-on="on" @click="labelChanged">
                             提交label
@@ -218,7 +229,7 @@
                           </v-card-text>
                           <v-card-text>
                             <v-btn block color="primary" outlined @click="update">提交</v-btn><br>
-                            <v-btn block color="success" outlined @click="prLabelDialog = false">还是算了</v-btn>
+                            <v-btn block color="success" outlined @click="doPullLabel = false">还是算了</v-btn>
                           </v-card-text>
                           <v-card-actions>
                           </v-card-actions>
@@ -232,8 +243,11 @@
                       <b>锁定label</b><br>锁定此label以防止编辑冲突
                     </v-flex>
                     <v-flex lg4 xs12>
-                      <v-btn depressed color="warning">
+                      <v-btn depressed color="warning" @click="lockLabel" v-if="labelInfo.lock.state == false">
                         锁定label
+                      </v-btn>
+                      <v-btn depressed color="success" @click="unlockLabel" v-else>
+                        解锁label
                       </v-btn>
                     </v-flex>
                   </v-layout>
@@ -265,6 +279,7 @@
 
 <script>
 import axios from 'axios'
+import { mapState } from 'vuex'
 
 function getFileType(fileName) {
   const extension = fileName.split('.').pop()
@@ -295,9 +310,8 @@ export default {
   data: () => ({
     dialog: false,
     deletedialog: false,
-    PICdialog: false,
     doDeletingFile: false,
-    prLabelDialog: false,
+    doPullLabel: false,
     errorDialog: false,
 
     errorMSG: '',
@@ -338,7 +352,6 @@ export default {
 
     declaration: '',
     declarationMatch: false,
-    declarationM: '',
 
     selectedFile: 0,
     files: [
@@ -349,9 +362,12 @@ export default {
     labelInfo: {
       name: '',
       size: 100,
-      PIC: '',
       uniUse: true,
-      isLock: true
+      lock: {
+        state: true,
+        originator: 'username',
+        time: 0
+      }
     },
 
     documentation: '<i>文档正在加载……</i>',
@@ -391,6 +407,9 @@ export default {
     isFileNameVaild: true
 
   }),
+  computed: {
+    ...mapState(['userStatus'])
+  },
   methods: {
     checkFileName() {
 
@@ -430,7 +449,7 @@ export default {
 
     },
 
-    deleteLabelFile() {
+    deleteFile() {
 
       this.doDeletingFile = false
 
@@ -475,6 +494,50 @@ export default {
 
     },
 
+    lockLabel() {
+
+      const label = this.$route.params.content
+
+      axios
+        .post(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=label.lock`, {
+          data: JSON.stringify({
+            operator: this.$store.state.userStatus.username,
+            time: new Date().getTime()
+          })
+        },
+          {
+            withCredentials: true
+          })
+        .then((res) => {
+
+          if (res.data.errorCode == 200) {
+
+            showSnackBar(this, '成功锁定模板', 'success')
+
+          } else {
+
+            showSnackBar(this, '锁定模板失败。错误代码：' + res.data.errorCode, 'error')
+
+          }
+
+        }).catch((err) => {
+
+          showSnackBar(this, '锁定模板失败：' + err, 'error')
+
+        })
+
+    },
+    unlockLabel() {
+
+      const label = this.$route.params.content
+
+      axios
+        .delete(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=label.lock`,{
+            withCredentials: true
+          }).then()
+
+    },
+
     labelChanged() {
 
       //文件增删
@@ -497,17 +560,23 @@ export default {
 
         if (updatedFile != null) {
 
+          console.log(updatedFile)
+
           axios
-            .post(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=${updatedFileName}`, 
-            updatedFile,
-            {
-              withCredentials: true
-            })
+            .post(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=${updatedFileName}`,
+              {
+                data: updatedFile
+              },
+              {
+                withCredentials: true
+              })
             .then((res) => {
 
               if (res.data.errorCode == 200) {
 
-                console.log('Successfully updated file' + updatedFileName)
+                showSnackBar(this, '成功：' + this.labelInfo.name + '已更新。', 'success')
+                this.doPullLabel = false
+
 
               } else {
 
@@ -534,6 +603,32 @@ export default {
 
       }
 
+    },
+
+    timestampToDateTime(timestamp) {
+
+      const date = new Date(timestamp)
+      const year = date.getFullYear()
+      const month = ("0" + (date.getMonth() + 1)).slice(-2)
+      const day = ("0" + date.getDate()).slice(-2)
+      const hour = ("0" + date.getHours()).slice(-2)
+      const minute = ("0" + date.getMinutes()).slice(-2)
+      const second = ("0" + date.getSeconds()).slice(-2)
+
+      const now = new Date()
+      const nowYear = now.getFullYear()
+      const nowMonth = ("0" + (now.getMonth() + 1)).slice(-2)
+      const nowDay = ("0" + now.getDate()).slice(-2)
+
+      if (year === nowYear && month === nowMonth && day === nowDay) {
+
+        return "本日" + hour + ":" + minute + ":" + second
+
+      } else {
+
+        return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second
+
+      }
     }
 
 
@@ -555,6 +650,7 @@ export default {
 
     }
 
+    //获取目录树
     axios
       .get(`${this.$globalApiURL}/label?type=getLabelTree&name=${label}`)
       .then((res) => {
@@ -563,6 +659,27 @@ export default {
 
         sessionStorage.setItem('files', JSON.stringify(this.files))
         sessionStorage.setItem('files_bak', JSON.stringify(this.files))
+
+        //检查label.lock文件
+        for (var i = 0; i < this.files.length; i++) {
+
+          if (this.files[i].name == 'label.lock') {
+
+            axios.get(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=label.lock`)
+              .then((res) => {
+
+                var lockLabel = res;
+
+                this.labelInfo.lock.state = true
+                this.labelInfo.lock.originator = lockLabel.data.operator
+                this.labelInfo.lock.time = lockLabel.data.time
+              })
+
+            break
+
+          }
+
+        }
 
         this.loadingOverlay = false
 
@@ -582,6 +699,7 @@ export default {
         this.errorDialog = true
         this.loadingOverlay = false
       })
+
 
     axios
       .get(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=README.md`)
@@ -685,4 +803,5 @@ function compareChange() {
   }
 
 }
+
 </script>

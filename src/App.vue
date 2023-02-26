@@ -95,6 +95,7 @@
 <script>
 import axios from 'axios'
 import Cookies from 'js-cookie'
+import store from './plugins/store'
 
 export default {
   name: 'App',
@@ -125,8 +126,19 @@ export default {
   computed: {
     isUserLogin() {
       if (Cookies.get('username') != undefined) {
+
+        store.commit('setLoginState', {
+          isLogin: true,
+          username: Cookies.get('username')
+        })
+
         return true
       } else {
+        store.commit('setLoginState', {
+          isLogin: false,
+          username: Cookies.get('username')
+        })
+
         return false
       }
     },
@@ -157,8 +169,12 @@ export default {
             this.loginFaild = false
             this.loginSuccess = true
 
-            Cookies.set('username', obj.username, { expires: 7 })
-            Cookies.set('sessionKey', obj.sessionKey, { expires: 7 })
+            Cookies.set('username', obj.username, {
+              expires: 7
+            })
+            Cookies.set('sessionKey', obj.sessionKey, {
+              expires: 7
+            })
 
             location.reload(true)
             break
@@ -180,6 +196,12 @@ export default {
 
       location.reload(true)
     }
+  },
+  mounted() {
+
+
+
   }
+
 }
 </script>

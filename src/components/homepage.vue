@@ -3,7 +3,7 @@
     <v-row>
       <div class="pageMain">
         <center>
-          <h1 class="my-4">欢迎来到EGW WORKSTATION {{ this.$store.state.isLogin }}</h1>
+          <h1 class="my-4">欢迎来到EGW WORKSTATION</h1>
           <p>EGW WORKSTATION是一个致力于改善Eyling GalgameWiki短代码开发环境的开发平台。<br>是Eyling GalgameWiki基础设施建设计划的一部分。</p>
         </center>
 

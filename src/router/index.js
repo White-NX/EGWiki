@@ -27,8 +27,8 @@ const routes = [
     path: '/search',
     name: 'search',
     component: () => import(/* webpackChunkName: "search" */ '../views/SearchView.vue')
-
   }
+
 ]
 
 const router = new VueRouter({

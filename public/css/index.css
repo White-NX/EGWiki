@@ -23,6 +23,10 @@
     background: repeating-linear-gradient(135deg, white 0px, 60px, rgb(253, 243, 153) 60px 120px);
 }
 
+.striped-bg-secondary {
+    background: repeating-linear-gradient(135deg, white 0px, 60px, rgb(228, 227, 227) 60px 120px);
+}
+
 .btnSmallText {
     color: gray;
     font-size: 10px;

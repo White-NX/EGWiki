@@ -54,9 +54,9 @@
           <v-card-text style="color: black">
             为了防止编辑冲突，你暂时无法编辑此模板，请待会再试。<br />
             <i>本次锁定是由{{ labelInfo.lock.originator }}于{{ timestampToDateTime(labelInfo.lock.time) }}发起的。<br />
-              当前，模板已经锁定了{{ (new Date().getTime() - labelInfo.lock.time).toLocaleString()
+              当前，模板已经锁定了{{ ( (new Date().getTime() - labelInfo.lock.time) / 1000 ).toLocaleString()
               }}秒，当锁定时间超过10,800秒（3小时）时，你可以强制解除锁定。</i>
-            <v-btn block large outlined elevation class="my-2" v-if="new Date().getTime() - labelInfo.lock.time > 10800">
+            <v-btn block large outlined elevation class="my-2" v-if="( (new Date().getTime() - labelInfo.lock.time) / 1000 ) > 10800">
               <v-icon>mdi-lock-open-outline</v-icon>强制解除锁定
             </v-btn>
           </v-card-text>
@@ -171,7 +171,7 @@
                     <v-flex lg4 xs12>
                       <v-dialog v-model="deletedialog" persistent max-width="320">
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn depressed color="error" v-bind="attrs" v-on="on">
+                          <v-btn depressed color="error" v-bind="attrs" v-on="on" :disabled="labelInfo.lock.state == true && labelInfo.lock.originator != userStatus.username">
                             删除label
                           </v-btn>
                         </template>
@@ -208,7 +208,7 @@
                     <v-flex lg4 xs12>
                       <v-dialog v-model="doPullLabel" persistent max-width="320">
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn depressed color="success" v-bind="attrs" v-on="on" @click="labelChanged">
+                          <v-btn depressed color="success" v-bind="attrs" v-on="on" @click="labelChanged" :disabled="labelInfo.lock.state == true && labelInfo.lock.originator != userStatus.username">
                             提交label
                           </v-btn>
                         </template>
@@ -243,10 +243,10 @@
                       <b>锁定label</b><br>锁定此label以防止编辑冲突
                     </v-flex>
                     <v-flex lg4 xs12>
-                      <v-btn depressed color="warning" @click="lockLabel" v-if="labelInfo.lock.state == false">
+                      <v-btn depressed color="warning" @click="lockLabel" v-if="labelInfo.lock.state == false" :disabled="labelInfo.lock.state == true && labelInfo.lock.originator != userStatus.username">
                         锁定label
                       </v-btn>
-                      <v-btn depressed color="success" @click="unlockLabel" v-else>
+                      <v-btn depressed color="success" @click="unlockLabel" v-else :disabled="labelInfo.lock.state == true && labelInfo.lock.originator != userStatus.username">
                         解锁label
                       </v-btn>
                     </v-flex>
@@ -282,7 +282,9 @@ import axios from 'axios'
 import { mapState } from 'vuex'
 
 function getFileType(fileName) {
+
   const extension = fileName.split('.').pop()
+
   switch (extension) {
     case 'js':
       return 'javascript'
@@ -291,6 +293,8 @@ function getFileType(fileName) {
     case 'md':
       return 'markdown'
     case 'json':
+      return 'json'
+    case 'lock':
       return 'json'
     default:
       return 'text'
@@ -364,7 +368,7 @@ export default {
       size: 100,
       uniUse: true,
       lock: {
-        state: true,
+        state: false,
         originator: 'username',
         time: 0
       }
@@ -513,6 +517,7 @@ export default {
           if (res.data.errorCode == 200) {
 
             showSnackBar(this, '成功锁定模板', 'success')
+            this.labelInfo.lock.state = true
 
           } else {
 
@@ -532,9 +537,26 @@ export default {
       const label = this.$route.params.content
 
       axios
-        .delete(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=label.lock`,{
-            withCredentials: true
-          }).then()
+        .delete(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=label.lock`, {
+          withCredentials: true
+        }).then((res) => {
+
+          if (res.data.errorCode == 200) {
+
+            showSnackBar(this, '成功解锁模板', 'success')
+            this.labelInfo.lock.state = false
+
+          } else {
+
+            showSnackBar(this, '解锁模板失败。' + res.data.errorCode, 'error')
+
+          }
+
+        }).catch((err) => {
+
+          showSnackBar(this, '解锁模板失败：' + err, 'error')
+
+        })
 
     },
 
@@ -559,8 +581,6 @@ export default {
         var updatedFile = sessionStorage.getItem(updatedFileName)
 
         if (updatedFile != null) {
-
-          console.log(updatedFile)
 
           axios
             .post(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=${updatedFileName}`,
@@ -668,7 +688,8 @@ export default {
             axios.get(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=label.lock`)
               .then((res) => {
 
-                var lockLabel = res;
+                var lockLabel = res.data;
+                console.log(res.data)
 
                 this.labelInfo.lock.state = true
                 this.labelInfo.lock.originator = lockLabel.data.operator
@@ -705,12 +726,12 @@ export default {
       .get(`${this.$globalApiURL}/label?type=labelAction&name=${label}&fileName=README.md`)
       .then((res) => {
 
-        if (typeof res.data.errorCode != 'undefined') {
+        if (res.data.errorCode != 200) {
           this.documentation = '<b>此label没有文档文件。</b>'
           return
         }
 
-        this.documentation = res.data
+        this.documentation = res.data.data
       })
       .catch((error) => {
 
@@ -726,11 +747,11 @@ export default {
       .then((res) => {
 
         this.lang = 'json'
-        this.content = JSON.stringify(res.data)
+        this.content = JSON.stringify(res.data.data)
         this.current++
 
-        this.labelDetails.author = res.data.author
-        this.labelDetails.description = res.data.description
+        this.labelDetails.author = res.data.data.author
+        this.labelDetails.description = res.data.data.description
 
       })
       .catch((error) => {
@@ -765,18 +786,19 @@ export default {
             typeof res.data != 'object'
           ) {
 
-            res.data = res.data.toString()
+            res.data.data = res.data.data.toString()
 
           }
+          console.log(res.data.data)
 
           this.lang = getFileType(this.files[this.selectedFile].name)
           if (this.lang == 'json') {
 
-            this.content = JSON.stringify(res.data)
+            this.content = JSON.stringify(res.data.data)
 
           } else {
 
-            this.content = res.data
+            this.content = res.data.data
 
           }
 

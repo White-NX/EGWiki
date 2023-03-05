@@ -3,7 +3,7 @@
     <v-app-bar app elevation="2" outlined class="blurred" dark color="primary">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <div class="d-flex">
-        <span class="strong"><b>WORKST</b>
+        <span class="strong"><b>工作站</b>
         </span>
       </div>
       <v-spacer></v-spacer>
@@ -18,9 +18,9 @@
         </template>
         <v-card>
           <v-card-title class="text-h5">
-            管理员身份登录
+            登录
           </v-card-title>
-          <v-card-text>由于Label的危险性，一般用户将不被允许修改Label。管理员则需要<b>指定的账号密码登录</b>。</v-card-text>
+          <v-card-text>欢迎您来到Eyling GalgameWiki！</v-card-text>
           <v-card-text>
             <v-alert dense outlined type="error" v-if="loginFaild">
               登录失败。{{ loginFaildReason }}

@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+
 import HomeView from '../views/HomeView.vue'
+import WikiHomeView from '../views/WikiHomeView.vue'
 
 Vue.use(VueRouter)
 
@@ -8,6 +10,11 @@ const routes = [
   {
     path: '/',
     name: 'home',
+    component: WikiHomeView
+  },
+  {
+    path: '/dev/',
+    name: 'wikiHome',
     component: HomeView
   },
   {

@@ -2,34 +2,47 @@
   <v-app>
     <v-app-bar app elevation="2" outlined class="blurred" dark color="primary">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+
       <div class="d-flex">
-        <span class="strong"><b>工作站</b>
+        <span class="strong"><b>EGW</b>
         </span>
       </div>
+
+      <v-text-field label="搜索" dense class="search-bar mx-4" hide-details outlined clearable
+        style="max-width:300px;" prepend-inner-icon="mdi-magnify-expand"></v-text-field>
+
       <v-spacer></v-spacer>
+
       <v-dialog v-model="dialog" persistent max-width="320">
+
         <template v-slot:activator="{ on, attrs }" v-if="!isUserLogin">
           <v-btn text v-bind="attrs" v-on="on">
-            <span class="mr-2">管理员登录</span>
+            <span class="mr-2">登录</span>
             <v-icon>
               mdi-security
             </v-icon>
           </v-btn>
         </template>
+
         <v-card>
           <v-card-title class="text-h5">
             登录
           </v-card-title>
+
           <v-card-text>欢迎您来到Eyling GalgameWiki！</v-card-text>
+
           <v-card-text>
             <v-alert dense outlined type="error" v-if="loginFaild">
               登录失败。{{ loginFaildReason }}
             </v-alert>
+
             <v-alert dense text type="success" v-if="loginSuccess">
-              <strong>登录成功！</strong>欢迎回来，主人
+              <strong>登录成功！</strong>欢迎回来！
             </v-alert>
+
             <div class="form-data">
               <v-form ref="loginForm" @input="validates">
+
                 <v-text-field label="账号" :rules="usernameRules" hide-details="auto" v-model="username"></v-text-field>
                 <v-text-field label="密码" :rules="passwordRules" hide-details="auto" type="password"
                   v-model="password"></v-text-field>
@@ -43,6 +56,7 @@
               </v-form>
             </div>
           </v-card-text>
+
           <v-card-actions>
             <v-spacer></v-spacer>
           </v-card-actions>
@@ -59,25 +73,56 @@
         </v-icon>
       </v-btn>
     </v-app-bar>
-    <v-navigation-drawer v-model="drawer" left fixed temporary>
-      <v-list-item>
+
+    <v-navigation-drawer v-model="drawer" left app class="wiki-sidebar">
+
+      <v-list-item class="wiki-sidebar-title">
         <v-list-item-content>
+
           <v-list-item-title class="text-h6">
             EGW Workstation
           </v-list-item-title>
+
           <v-list-item-subtitle>
             欢迎来到EGW！
           </v-list-item-subtitle>
+
         </v-list-item-content>
       </v-list-item>
-      <v-list dense nav v-for="item in items" :key="item.title" link>
-        <v-list-item :href="item.url">
-          <v-list-item-icon><v-icon>{{ item.icon }}</v-icon></v-list-item-icon>
+
+      <v-list dense nav class="wiki-sidebar-menu">
+        <v-list-item v-for="item in items" :key="item.title" :href="item.url">
+          <v-list-item-icon>
+            <v-icon>{{ item.icon }}</v-icon>
+          </v-list-item-icon>
+
           <v-list-item-content>
             <v-list-item-title>{{ item.title }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+
+        <div v-if="scheme" v-for="item in scheme" :key="item.topic">
+
+          <v-list-item>
+            <v-list-item-subtitle>
+              {{ item.topic }}
+              <v-divider></v-divider>
+            </v-list-item-subtitle>
+          </v-list-item>
+
+          <v-list-item v-for="items in item.items" :href="items.url" :key="items.title">
+            <v-list-item-icon>
+              <v-icon>{{ items.icon }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-content>
+              <v-list-item-title>{{ items.title }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </div>
+
       </v-list>
+
     </v-navigation-drawer>
 
     <v-main>
@@ -119,10 +164,24 @@ export default {
 
     drawer: false,
     items: [
-      { title: '主页', icon: 'mdi-home-outline', url: '/#/' },
-      { title: '关于', icon: 'mdi-information-outline', url: '/#/about' },
-    ]
+      { title: "主页", icon: "mdi-home-outline", url: "/#/" },
+      { title: "关于", icon: "mdi-information-outline", url: "/#/about" },
+    ],
+    scheme: [
+      {
+        topic: "其他",
+        items: [
+          { title: "帮助", icon: "mdi-home-outline", url: "/#/help" },
+          { title: "关于", icon: "mdi-information-outline", url: "/#/about" },
+        ]
+      }
+    ],
   }),
+  async mounted() {
+
+    await this.setDrawerState()
+
+  },
   computed: {
     isUserLogin() {
       if (Cookies.get('username') != undefined) {
@@ -187,21 +246,27 @@ export default {
         }
       })
     },
+
     validates() {
       this.isvalid = this.$refs.loginForm.validate()
     },
+
     logout() {
       Cookies.remove('username')
       Cookies.remove('sessionKey')
 
       location.reload(true)
-    }
+    },
+
+    async setDrawerState() {
+      if (this.$vuetify.breakpoint.smAndDown) {
+        this.drawer = false; // 在小屏幕上收起侧边栏
+      } else {
+        this.drawer = true; // 在大屏幕上展开侧边栏
+      }
+    },
+
   },
-  mounted() {
-
-
-
-  }
 
 }
 </script>

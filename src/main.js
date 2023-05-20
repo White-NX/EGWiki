@@ -10,7 +10,7 @@ import store from './plugins/store'
 
 Vue.config.productionTip = false
 
-Vue.prototype.$globalApiURL = 'http://192.168.200.200:3000'
+Vue.prototype.$globalApiURL = 'http://192.168.1.100:3000'
 Vue.prototype.$globalApiRootURL = '.eyling.top'
 
 new Vue({

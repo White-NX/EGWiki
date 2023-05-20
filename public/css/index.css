@@ -100,3 +100,53 @@ code {
     right: 0;
     margin: auto;
 }
+
+/* Wiki 用css */
+.float-right {
+    float: right;
+    shape-outside: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+    max-width: 100%;
+}
+.float-left {
+    float: left;
+    shape-outside: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+    max-width: 100%;
+}
+
+@media only screen and (max-width: 480px) {
+    figure.image {
+        float: none;
+        margin: 10px auto;
+        display: block;
+        shape-outside: none;
+    }
+}
+
+/* 浮动图片（卡片） */
+figcaption.imgFigcap {
+    background-color: #c0c0c0;
+    color: black;
+    font: smaller sans-serif;
+    padding: 3px;
+    text-align: center;
+}
+
+figure.image {
+    border: thin #c0c0c0 solid;
+    margin: 0 0 10px 10px;
+    display: flex;
+    flex-flow: column;
+    padding: 5px;
+    max-width: 220px;
+}
+
+.card {
+
+    background-color: white;
+    color: black;
+    font: sans-serif;
+    padding: 10px;
+
+    border: thin #c0c0c0 solid; 
+
+}

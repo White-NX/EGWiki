@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <div>
 
     <v-snackbar v-model="snackbar.status" timeout="4000" text :color="snackbar.color">
       {{ snackbar.msg }}
@@ -11,54 +11,24 @@
       </template>
     </v-snackbar>
 
+    <div class="wiki-text my-2" v-html="wiki.text"></div>
 
-      <v-row>
-        <v-col cols="12">
+    <v-col class="category" v-if="!Object.keys(wiki.category).length == 0">
+      <v-card fluid outlined>
+        <v-card-title><v-icon class="mx-1">mdi-folder</v-icon> 分类</v-card-title>
+        <v-card-text>
 
-          <div class="wiki-title-roup">
-            <h1 class="wiki-title">{{ wiki.title }}</h1>
+          <v-chip v-for="item in wiki.category" :key="item" class="ma-2" color="blue" label text-color="white">
+            <v-icon left>
+              mdi-label
+            </v-icon>
+            {{ item }}
+          </v-chip>
 
-            <template>
-
-              <v-tabs v-model="wiki_tab" class="wiki-tabs">
-                <v-tab>条目</v-tab>
-                <v-tab>讨论</v-tab>
-
-                <v-spacer></v-spacer>
-
-                <v-tab>编辑</v-tab>
-                <v-tab>历史</v-tab>
-              </v-tabs>
-
-            </template>
-
-            <v-divider></v-divider>
-
-            <small class="wiki-subtitle">欢迎来到EGW，自由——开放——共享是我们最大的目标！</small>
-          </div>
-
-          <div class="wiki-text my-2" v-html="wiki.text"></div>
-
-        </v-col>
-
-        <v-col class="category" v-if="!wiki.category">
-          <v-card fluid outlined>
-            <v-card-title><v-icon class="mx-1">mdi-folder</v-icon> 分类</v-card-title>
-            <v-card-text>
-
-              <v-chip v-for="item in wiki.category" :key="item" class="ma-2" color="blue" label text-color="white">
-                <v-icon left>
-                  mdi-label
-                </v-icon>
-                {{ item }}
-              </v-chip>
-
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-      </v-row>
-  </v-container>
+        </v-card-text>
+      </v-card>
+    </v-col>
+  </div>
 </template>
 
 <script>
@@ -94,8 +64,8 @@ export default {
   }),
   async mounted() {
 
-    if(this.$route.params.pathMatch == '') window.location.href = '/#/Homepage'
-    if(this.$route.params.pathMatch.endsWith('/')) window.location.href = $route.params.pathMatch.slice(0, -1)
+    if (this.$route.params.pathMatch == '') window.location.href = $globalDefaultPage
+    if (this.$route.params.pathMatch.endsWith('/')) window.location.href = $route.params.pathMatch.slice(0, -1)
 
     await this.fetchWikiContent()
 
@@ -118,7 +88,7 @@ export default {
         case 1:
           //wiki条目讨论页
 
-          if(!this.$route.params.pathMatch.endsWith('/discuss')) window.location.href = '/#/' + this.$route.params.pathMatch + '/discuss'
+          if (!this.$route.params.pathMatch.endsWith('/discuss')) window.location.href = '/#/' + this.$route.params.pathMatch + '/discuss'
 
           break
       }
@@ -135,7 +105,7 @@ export default {
 
       try {
 
-        const wikiContent = await getContentByTitle(this.$globalApiURL, wikiTitle)
+        const wikiContent = await fetchWikiByTitle(this.$globalApiURL, wikiTitle)
         this.wiki.text = wikiContent.content
         this.wiki.category = wikiContent.category
 
@@ -159,7 +129,7 @@ export default {
   },
 }
 
-function getContentByTitle(apiURL, title) {
+function fetchWikiByTitle(apiURL, title) {
 
   return new Promise(async (resolve, reject) => {
 

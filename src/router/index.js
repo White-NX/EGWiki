@@ -18,6 +18,10 @@ const routes = [
     name: 'search',
     component: () => import(/* webpackChunkName: "search" */ '../views/SearchView.vue')
   }, {
+    path: '/edit/*',
+    name: 'wikiedit',
+    component: () => import(/* webpackChunkName: "wikiedit" */ '../views/WikiEditView.vue')
+  }, {
     path: '/*',
     name: 'wiki',
     component: WikiView

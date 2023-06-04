@@ -13,6 +13,8 @@ Vue.config.productionTip = false
 Vue.prototype.$globalApiURL = 'http://192.168.1.100:3000'
 Vue.prototype.$globalApiRootURL = '.eyling.top'
 
+Vue.prototype.$globalDefaultPage = '/#/Homepage'
+
 new Vue({
   router,
   vuetify,

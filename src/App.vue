@@ -8,8 +8,8 @@
         </span>
       </div>
 
-      <v-text-field label="搜索" dense class="search-bar mx-4" hide-details outlined clearable
-        style="max-width:300px;" prepend-inner-icon="mdi-magnify-expand"></v-text-field>
+      <v-text-field label="搜索" dense class="search-bar mx-4" hide-details outlined clearable style="max-width:300px;"
+        prepend-inner-icon="mdi-magnify-expand"></v-text-field>
 
       <v-spacer></v-spacer>
 
@@ -80,7 +80,7 @@
         <v-list-item-content>
 
           <v-list-item-title class="text-h6">
-            EGW Workstation
+            Eyling GalgameWiki
           </v-list-item-title>
 
           <v-list-item-subtitle>

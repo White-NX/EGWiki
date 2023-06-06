@@ -8,7 +8,13 @@ import Cookies from 'js-cookie'
 import componentsInstall from './plugins/install'
 import store from './plugins/store'
 
+import throwError from './plugins/throwError' 
+
+const dataBus = new Vue()
+
 Vue.config.productionTip = false
+
+Vue.prototype.$dataBus = dataBus
 
 Vue.prototype.$globalApiURL = 'http://192.168.1.100:3000'
 Vue.prototype.$globalApiRootURL = '.eyling.top'
@@ -21,6 +27,7 @@ new Vue({
   axios,
   Cookies,
   store,
+  throwError,
   Vuelidate,
   render: h => h(App)
 }).$mount('#app')

@@ -111,8 +111,6 @@ export default {
 
       } catch (e) {
 
-        console.log(e)
-
         if (e.code == 'ERR_BAD_REQUEST') {
 
           this.wiki.text = `<b>名为${wikiTitle}的页面不存在，你可以：创建此页面 或 搜索页面。</b>`
@@ -138,7 +136,7 @@ function fetchWikiByTitle(apiURL, title) {
       .then((res) => {
 
         resolve({
-          content: res.data.wiki.content,
+          content: res.data.pages[0].content,
           category: res.data.category
         })
 

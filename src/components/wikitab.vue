@@ -40,13 +40,31 @@ export default {
           //wiki编辑页
 
           window.location.href = '/#/edit/' + this.$route.params.pathMatch
+
+          break
+        case 3:
+          //wiki历史页
+
+          window.location.href = '/#/history/' + this.$route.params.pathMatch
+
+          break
       }
 
     }
   },
   mounted() {
 
-    if (window.location.hash.split('/')[1] == 'edit') this.wiki_tab = 2
+    if (window.location.hash.split('/')[1] == 'edit') {
+
+      this.wiki_tab = 2
+
+    }else if (window.location.hash.split('/')[1] == 'history'){
+
+      this.wiki_tab = 3
+
+    }
+
+    
 
   }
 }

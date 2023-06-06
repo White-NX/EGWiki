@@ -22,6 +22,10 @@ const routes = [
     name: 'wikiedit',
     component: () => import(/* webpackChunkName: "wikiedit" */ '../views/WikiEditView.vue')
   }, {
+    path: '/history/*',
+    name: 'history',
+    component: () => import(/* webpackChunkName: "history" */ '../views/WikiHistoryView.vue')
+  }, {
     path: '/*',
     name: 'wiki',
     component: WikiView

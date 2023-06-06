@@ -3,8 +3,14 @@
     <wikititle :loading="loading" :title="'编辑中: ' + title" />
 
     <v-skeleton-loader v-if="loading" type="image"></v-skeleton-loader>
-    <v-textarea v-else outlined name="input-7-4" label="edit" :value="value" class="my-2" rows="20"></v-textarea>
+    <v-textarea v-else outlined name="input-7-4" label="edit" :value="value" class="my-1" rows="20"></v-textarea>
+
+    <v-btn depressed color="primary">
+      提交
+    </v-btn>
     
+    <p class="my-2">在提交之前，您必须确保您认同您即将发布的文本将遵循CC BY-NC-SA 3.0许可协议发布。</p>
+
   </v-col>
 </template>
 
@@ -28,15 +34,19 @@ export default {
 
     this.loading = true
 
-    this.fetchWikiByTitle(this.$globalApiURL, this.title).then((row)=>{
+    this.fetchWikiByTitle(this.$globalApiURL, this.title).then((row) => {
 
       this.value = row.content
 
-    }).catch(e=>{
+    }).catch(e => {
 
-      console.error(e)
+      if (e.code != 'ERR_BAD_REQUEST') {
 
-    }).finally(()=>{
+        this.$throwError('wiki', 'Acquisition of SORCE Wiki Pages', e)
+
+      }
+
+    }).finally(() => {
 
       this.loading = false
 
@@ -55,7 +65,7 @@ export default {
           .then((res) => {
 
             resolve({
-              content: res.data.wiki.content,
+              content: res.data.pages[0].content,
               category: res.data.category
             })
 

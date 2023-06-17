@@ -2,7 +2,7 @@
   <!--<wiki-page />-->
   <v-col cols="12">
 
-    <wikititle :loading="loading" :title="wiki.title" />
+    <wikititle :loading="loading" :title="wiki.title" :protection="wiki.protection"/>
 
     <div class="wiki-main my-2">
 
@@ -43,7 +43,11 @@ export default {
     wiki: {
       title: 'Title',
       text: '',
-      category: []
+      category: [],
+
+      protection: {
+        level: 0
+      }
     },
 
     snackbar: {
@@ -65,8 +69,6 @@ export default {
     this.wiki.title = this.$route.params.pathMatch
 
     await this.fetchWikiContent()
-
-    //
 
   },
 
@@ -119,17 +121,19 @@ export default {
 
       try {
 
-        const wikiContent = await this.fetchWikiByTitle(this.$globalApiURL, wikiTitle)
+        const wikiContent = await this.fetchWikiByTitle(wikiTitle)
         this.wiki.text = wikiContent.content
         this.wiki.category = wikiContent.category
-
+        this.wiki.protection.level = wikiContent.protection_level
 
       } catch (e) {
 
         if (e.code == 'ERR_BAD_REQUEST') {
 
           this.wiki.text = `<b>名为${wikiTitle}的页面不存在，你可以：创建此页面 或 搜索页面。</b>`
+
           this.wiki.category = []
+          this.wiki.protection.level = 0
 
         } else {
 
@@ -142,17 +146,19 @@ export default {
       this.loading = false
 
     },
-    fetchWikiByTitle(apiURL, title) {
+    fetchWikiByTitle(title) {
 
       return new Promise(async (resolve, reject) => {
 
         axios
-          .get(`${apiURL}/wiki?title=${title}`)
+          .get(`${this.$globalApiURL}/wiki?title=${title}`)
           .then((res) => {
 
             resolve({
               content: res.data.pages[0].content,
-              category: res.data.category
+              protection_level: res.data.pages[0].protection_level,
+              category: res.data.category,
+              
             })
 
 

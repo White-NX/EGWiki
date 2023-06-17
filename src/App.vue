@@ -63,56 +63,59 @@
         </v-card>
       </v-dialog>
 
-      <v-dialog v-model="onThrowError" max-width="500">
+      <ThrowError :error-report="errorReport" :on-throw-error="onThrowError" />
 
-        <v-card>
-          <v-card-title class="text-h5 striped-bg-error">
-            <v-icon color="white" class="mx-1">mdi-alert</v-icon> <span style="color:white">数据同步失败</span>
-          </v-card-title>
+      <template v-if="isUserLogin">
 
-          <v-card-text class="my-2">
+        <v-menu open-on-hover bottom offset-y :close-on-content-click="false">
+          <template v-slot:activator="{ on, attrs }">
+            <v-avatar color="black" size="45" v-bind="attrs" v-on="on">W</v-avatar>
+          </template>
 
-            <span class="subtitle-1">试图通过标准互联网链接与EGW骨干网络进行同步时失败。部分资源缺失或无法获取：</span>
-            <v-divider class="my-1"></v-divider>
+          <v-card width="400">
+            <v-card-text>
 
-            <v-list>
-              <v-list-item v-for="(error, index) in errorReport" :key="index">
-                <v-list-item-icon>
-                  <v-icon>mdi-alert-circle-outline</v-icon>
-                </v-list-item-icon>
+              <v-card flat style="background-color: rgb(241, 241, 241);">
+                <v-card-text>
+                  <v-list-item>
+                    <v-list-item-icon>
+                      <v-avatar color="primary" size="60">W</v-avatar>
+                    </v-list-item-icon>
 
-                <v-list-item-content>
-                  <v-list-item-title>
-                    <span class="bender" style="color:gray">#{{ error.node }}</span> - {{ error.operation }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle class="bender">[!] {{ error.error }}</v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        {{ loginUsername }}
+                      </v-list-item-title>
+                      <v-list-item-subtitle class="bender"># 权限组</v-list-item-subtitle><v-btn outlined>管理您的账户</v-btn>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-card-text>
+              </v-card>
 
-          </v-card-text>
+              <v-list>
+                <template v-for="(menuItems, menuCategory) in userOptions">
+                  <v-list-group :key="menuCategory" no-action>
+                    <template v-slot:activator>
+                      <v-list-item-content>
+                        <v-list-item-title>{{ menuCategory }}</v-list-item-title>
+                      </v-list-item-content>
+                    </template>
 
-          <v-divider></v-divider>
+                    <v-list-item v-for="(menuItem, index) in menuItems" :key="index" @click="navigateTo(menuItem.url)">
+                      <v-list-item-content>
+                        <v-list-item-title>{{ menuItem.name }}</v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list-group>
+                </template>
+              </v-list>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="primary" text @click="refleshPage()">
-              <v-icon>mdi-refresh</v-icon> Re-Link
-            </v-btn>
-          </v-card-actions>
-        </v-card>
+            </v-card-text>
+          </v-card>
+        </v-menu>
 
-      </v-dialog>
+      </template>
 
-      <v-btn v-if="isUserLogin" text>
-        {{ loginUsername }}
-      </v-btn>
-      <v-btn v-if="isUserLogin">
-        <span class="mr-2">管理</span>
-        <v-icon>
-          mdi-security
-        </v-icon>
-      </v-btn>
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawer" left app class="wiki-sidebar">
@@ -182,34 +185,32 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import store from './plugins/store'
+import throwError from '@/components/throwError.vue'
+import ThrowError from '@/components/throwError.vue'
 
 export default {
-  name: 'App',
+  name: "App",
   data: () => ({
     dialog: false,
 
     onThrowError: false,
-    errorReport: [
-    ],
+    errorReport: [],
 
-    username: '',
-    password: '',
-
-    loginFaildReason: '',
+    username: "",
+    password: "",
+    loginFaildReason: "",
     loginFaild: false,
-    loginSuccess: '',
-
+    loginSuccess: "",
     isvalid: true,
     usernameRules: [
-      v => !!v || '用户名必填',
-      v => (v && v.length <= 20) || '用户名必须少于20位'
+      v => !!v || "用户名必填",
+      v => (v && v.length <= 20) || "用户名必须少于20位"
     ],
     passwordRules: [
-      v => !!v || '密码必填',
-      v => (v && v.length <= 30) || '密码必须少于30位'
+      v => !!v || "密码必填",
+      v => (v && v.length <= 30) || "密码必须少于30位"
     ],
     formValid: true,
-
     drawer: false,
     items: [
       { title: "主页", icon: "mdi-home-outline", url: "/#/" },
@@ -224,106 +225,98 @@ export default {
         ]
       }
     ],
+
+    userOptions: {
+      "站点": [
+        { "name": "关注页面", "url": "https://example.com" },
+        { "name": "贡献", "url": "https://example.com" }
+      ],
+      "我": [
+        { "name": "消息", "url": "……" }
+      ]
+    },
+
   }),
   async mounted() {
-
-    await this.setDrawerState()
-
-    this.$dataBus.$on('throwError', (error)=>{
-      this.errorReport.push(error)
-      this.onThrowError = true
-
-    })
-
+    await this.setDrawerState();
+    this.$dataBus.$on("throwError", (error) => {
+      this.errorReport.push(error);
+      this.onThrowError = true;
+    });
   },
   computed: {
     isUserLogin() {
-      if (Cookies.get('username') != undefined) {
-
-        store.commit('setLoginState', {
+      if (Cookies.get("username") != undefined) {
+        store.commit("setLoginState", {
           isLogin: true,
-          username: Cookies.get('username')
-        })
-
-        return true
-      } else {
-        store.commit('setLoginState', {
+          username: Cookies.get("username")
+        });
+        return true;
+      }
+      else {
+        store.commit("setLoginState", {
           isLogin: false,
-          username: Cookies.get('username')
-        })
-
-        return false
+          username: Cookies.get("username")
+        });
+        return false;
       }
     },
     loginUsername() {
-
-      return Cookies.get('username')
-
+      return Cookies.get("username");
     }
   },
   methods: {
     submitForm() {
-      this.isvalid = true
-      axios.post(this.$globalApiURL + '/auth?type=login', {
+      this.isvalid = true;
+      axios.post(this.$globalApiURL + "/auth?type=login", {
         username: this.username,
         password: this.password
       }).then(res => {
-
-        var obj = res.data
-
+        var obj = res.data;
         switch (obj.errorCode) {
-          case '011/012':
-            this.loginFaildReason = '用户名或密码错误'
-            this.loginFaild = true
-
-            break
-          case '200':
-            this.loginFaild = false
-            this.loginSuccess = true
-
-            Cookies.set('username', obj.username, {
+          case "011/012":
+            this.loginFaildReason = "用户名或密码错误";
+            this.loginFaild = true;
+            break;
+          case 200:
+            this.loginFaild = false;
+            this.loginSuccess = true;
+            Cookies.set("username", obj.username, {
               expires: 7
-            })
-            Cookies.set('sessionKey', obj.sessionKey, {
+            });
+            Cookies.set("sessionKey", obj.sessionKey, {
               expires: 7
-            })
-
-            location.reload(true)
-            break
+            });
+            location.reload(true);
+            break;
         }
-
       }).catch((e) => {
         if (e.response != 200) {
-          this.loginFaild = true
-          this.loginFaildReason = e
+          this.loginFaild = true;
+          this.loginFaildReason = e;
         }
-      })
+      });
     },
-
     validates() {
-      this.isvalid = this.$refs.loginForm.validate()
+      //this.isvalid = this.$refs.loginForm.validate();
     },
-
     logout() {
-      Cookies.remove('username')
-      Cookies.remove('sessionKey')
-
-      location.reload(true)
+      Cookies.remove("username");
+      Cookies.remove("sessionKey");
+      location.reload(true);
     },
-
     async setDrawerState() {
       if (this.$vuetify.breakpoint.smAndDown) {
         this.drawer = false; // 在小屏幕上收起侧边栏
-      } else {
+      }
+      else {
         this.drawer = true; // 在大屏幕上展开侧边栏
       }
     },
-
-    refleshPage(){
-      location.reload();
-    },
-
   },
-
+  comments: {
+    throwError
+  },
+  components: { ThrowError }
 }
 </script>

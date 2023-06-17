@@ -2,26 +2,16 @@
   <!--<wiki-page />-->
   <v-col cols="12">
 
-      <wikititle :loading="loading" :title="wiki.title" />
+    <wikititle :loading="loading" :title="wiki.title" :protection="wiki.protection"/>
 
     <div class="wiki-main my-2">
-
-      <v-snackbar v-model="snackbar.status" timeout="4000" text :color="snackbar.color">
-        {{ snackbar.msg }}
-
-        <template v-slot:action="{ attrs }">
-          <v-btn color="primary" text v-bind="attrs" @click="snackbar.status = false">
-            Close
-          </v-btn>
-        </template>
-      </v-snackbar>
 
       <v-skeleton-loader v-if="loading" type="paragraph, image, paragraph"></v-skeleton-loader>
       <div class="wiki-text my-2" v-else v-html="wiki.text"></div>
 
       <v-col class="category" v-if="!Object.keys(wiki.category).length == 0">
         <v-card fluid outlined>
-          <v-card-title><v-icon class="mx-1">mdi-folder</v-icon> 分类</v-card-title>
+          <v-card-title><v-icon class="mx-1">mdi-folder</v-icon>分类</v-card-title>
           <v-card-text>
 
             <v-chip v-for="item in wiki.category" :key="item" class="ma-2" color="blue" label text-color="white">
@@ -43,16 +33,7 @@
 <script>
 
 import axios from 'axios'
-import wikitab from '../components/wikitab.vue'
 import wikititle from '../components/wikititle.vue'
-
-function showSnackBar(that, content, color = 'success') {
-
-  that.snackbar.color = color
-  that.snackbar.msg = content
-  that.snackbar.status = true
-
-}
 
 export default {
   name: 'wikiText',
@@ -62,7 +43,11 @@ export default {
     wiki: {
       title: 'Title',
       text: '',
-      category: []
+      category: [],
+
+      protection: {
+        level: 0
+      }
     },
 
     snackbar: {
@@ -109,8 +94,6 @@ export default {
 
       if (after == before) return
 
-      console.log(after)
-
       switch (after) {
         case 0:
           //wiki条目
@@ -138,42 +121,44 @@ export default {
 
       try {
 
-        const wikiContent = await this.fetchWikiByTitle(this.$globalApiURL, wikiTitle)
+        const wikiContent = await this.fetchWikiByTitle(wikiTitle)
         this.wiki.text = wikiContent.content
         this.wiki.category = wikiContent.category
-
+        this.wiki.protection.level = wikiContent.protection_level
 
       } catch (e) {
-
-        console.log(e)
 
         if (e.code == 'ERR_BAD_REQUEST') {
 
           this.wiki.text = `<b>名为${wikiTitle}的页面不存在，你可以：创建此页面 或 搜索页面。</b>`
+
           this.wiki.category = []
+          this.wiki.protection.level = 0
 
         } else {
 
-          showSnackBar(this, '出现错误，请重试', 'error')
+          this.$throwError('wiki', 'Acquisition of Wiki Pages', e)
 
         }
 
       }
 
       this.loading = false
-      
+
     },
-    fetchWikiByTitle(apiURL, title) {
+    fetchWikiByTitle(title) {
 
       return new Promise(async (resolve, reject) => {
 
         axios
-          .get(`${apiURL}/wiki?title=${title}`)
+          .get(`${this.$globalApiURL}/wiki?title=${title}`)
           .then((res) => {
 
             resolve({
-              content: res.data.wiki.content,
-              category: res.data.category
+              content: res.data.pages[0].content,
+              protection_level: res.data.pages[0].protection_level,
+              category: res.data.category,
+              
             })
 
 

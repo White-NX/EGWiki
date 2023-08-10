@@ -2,7 +2,7 @@
   <!--<wiki-page />-->
   <v-col cols="12">
 
-    <wikititle :loading="loading" :title="wiki.title" :protection="wiki.protection"/>
+    <wikititle :loading="loading" :title="wiki.title" :protection="wiki.protection" />
 
     <div class="wiki-main my-2">
 
@@ -10,19 +10,13 @@
       <div class="wiki-text my-2" v-else v-html="wiki.text"></div>
 
       <v-col class="category" v-if="!Object.keys(wiki.category).length == 0">
-        <v-card fluid outlined>
-          <v-card-title><v-icon class="mx-1">mdi-folder</v-icon>分类</v-card-title>
-          <v-card-text>
-
-            <v-chip v-for="item in wiki.category" :key="item" class="ma-2" color="blue" label text-color="white">
-              <v-icon left>
-                mdi-label
-              </v-icon>
-              {{ item }}
-            </v-chip>
-
-          </v-card-text>
-        </v-card>
+        <small>分类</small>
+        <v-chip v-for="item in wiki.category" :key="item" class="ma-2" color="blue" label text-color="white">
+          <v-icon left>
+            mdi-label
+          </v-icon>
+          {{ item }}
+        </v-chip>
       </v-col>
 
     </div>
@@ -138,6 +132,7 @@ export default {
         } else {
 
           this.$throwError('wiki', 'Acquisition of Wiki Pages', e)
+          console.error(e)
 
         }
 
@@ -153,12 +148,12 @@ export default {
         axios
           .get(`${this.$globalApiURL}/wiki?title=${title}`)
           .then((res) => {
-
+            
             resolve({
-              content: res.data.pages[0].content,
-              protection_level: res.data.pages[0].protection_level,
-              category: res.data.category,
-              
+              content: res.data.pages.content,
+              protection_level: res.data.pages.protection_level,
+              category: res.data.categories,
+
             })
 
 

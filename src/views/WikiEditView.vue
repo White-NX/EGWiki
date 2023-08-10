@@ -1,17 +1,63 @@
 <template>
-  <v-col cols="12">
-    <wikititle :loading="loading" :title="'编辑中: ' + title" />
+	<v-col cols="12">
+		<wikititle :loading="loading" :title="'编辑中: ' + title" />
 
-    <v-skeleton-loader v-if="loading" type="image"></v-skeleton-loader>
-    <v-textarea v-else outlined name="input-7-4" label="edit" :value="value" class="my-1" rows="20"></v-textarea>
+		<v-skeleton-loader v-if="loading" type="image"></v-skeleton-loader>
+		<v-card outlined v-else class="wiki-editor">
+			<v-textarea outlined name="input-7-4" label="edit" rows="20" class="wiki-editor" v-model="wikiEditor"></v-textarea>
 
-    <v-btn depressed color="primary">
-      提交
-    </v-btn>
-    
-    <p class="my-2">在提交之前，您必须确保您认同您即将发布的文本将遵循CC BY-NC-SA 3.0许可协议发布。</p>
+			<v-card-text>
 
-  </v-col>
+				条目分类
+				<v-chip v-for="item in wikiCategory" :key="item" class="ma-1" color="blue" label text-color="white">
+					<v-icon left>
+						mdi-label
+					</v-icon>
+					{{ item }}
+					<v-icon right @click="removeChip(item)" small>
+						mdi-close
+					</v-icon>
+				</v-chip>
+
+				<v-chip label text-color="white">
+					<v-icon left>
+						mdi-label
+					</v-icon>
+
+					<v-text-field dense :placeholder="tagPlaceholder" v-model="newTag" style="max-width:100px;"
+						:rules="tagRules"></v-text-field>
+
+					<v-icon right @click="addChip(item)" small>
+						mdi-plus
+					</v-icon>
+
+				</v-chip>
+
+			</v-card-text>
+
+			<v-card-text>
+				常用理由：?
+				<v-text-field label="编辑摘要：简要描述你的更改" outlined dense class="edit-summary" v-model="editSummary"></v-text-field>
+				<div class="license-notification-text">当你点击<strong>提交修改</strong>时，就代表你同意本站的协议，同时，也代表你同意依据CC BY-NC-SA 3.0
+					CN授权共享你的贡献。</div>
+
+			</v-card-text>
+
+			<v-card-actions>
+				<v-btn depressed color="primary" @click="submitWiki()">
+					提交修改
+				</v-btn>
+				<v-btn depressed outlined>
+					预览
+				</v-btn>
+				<v-btn depressed outlined color="red">
+					取消
+				</v-btn>
+			</v-card-actions>
+
+		</v-card>
+
+	</v-col>
 </template>
 
 <script>
@@ -19,72 +65,129 @@ import wikititle from '@/components/wikititle.vue'
 import axios from 'axios'
 
 export default {
-  data: () => ({
+	data: () => ({
 
-    loading: false,
+		loading: false,
 
-    title: '',
-    value: ''
+		title: '',
 
-  }),
+		wikiEditor: '',
+		editSummary: '',
+		wikiCategory: [],
 
-  async mounted() {
+		item: '',
 
-    this.title = this.$route.params.pathMatch
+		newTag: '',
+		tagRules: [
+			v => !!v,
+			v => (v && v.length <= 100) || "tag长度必须小于20位"
+		],
+		tagPlaceholder: 'NEW'
 
-    this.loading = true
+	}),
 
-    this.fetchWikiByTitle(this.$globalApiURL, this.title).then((row) => {
+	async mounted() {
 
-      this.value = row.content
+		this.title = this.$route.params.pathMatch
 
-    }).catch(e => {
+		this.loading = true
 
-      if (e.code != 'ERR_BAD_REQUEST') {
+		this.fetchWikiByTitle(this.$globalApiURL, this.title).then((row) => {
 
-        this.$throwError('wiki', 'Acquisition of SORCE Wiki Pages', e)
+			this.wikiEditor = row.content
+			this.wikiCategory = row.category
+			console.log(row.category)
 
-      }
+		}).catch(e => {
 
-    }).finally(() => {
+			if (e.code != 'ERR_BAD_REQUEST') {
 
-      this.loading = false
+				this.$throwError('wiki', 'Acquisition of SORCE Wiki Pages', e)
 
-    })
+			}
 
-  },
+		}).finally(() => {
 
-  methods: {
+			this.loading = false
 
-    async fetchWikiByTitle(apiURL, title) {
+		})
 
-      return new Promise(async (resolve, reject) => {
+	},
 
-        axios
-          .get(`${apiURL}/wiki?title=${title}&source=false`)
-          .then((res) => {
+	methods: {
 
-            resolve({
-              content: res.data.pages[0].content,
-              category: res.data.category
-            })
+		submitWiki() {
 
+			this.updateWikiByTitle(this.$globalApiURL, this.title)
 
-          }).catch(e => {
+		},
 
-            reject(e)
+		async fetchWikiByTitle(apiURL, title) {
+			try {
+				const response = await axios.get(`${apiURL}/wiki?title=${title}&source=true`);
+				return {
+					content: response.data.pages.content,
+					category: response.data.categories
+				};
+			} catch (error) {
+				throw error;
+			}
+		},
 
-          })
+		async updateWikiByTitle(apiURL, title) {
+			const username = this.$store.state.userStatus.username
+			const session = this.$store.state.userStatus.session
 
-      })
+			try {
+				await axios.post(`${apiURL}/wiki?title=${title}`, {
+						content: this.wikiEditor,
+						comment: this.editSummary,
+						categories: this.wikiCategory
+					},
+					{
+					headers: {
+						username: username,
+						session: session
+					},
+				});
+			} catch (error) {
+				throw error;
+			}
+		},
 
-    }
+		addChip() {
 
-  },
+			if (this.isStringInArray(this.wikiCategory, this.newTag)) {
 
-  components: {
-    wikititle
-  }
+				this.newTag = ''
+				this.tagPlaceholder = '标签重复！'
+
+				return
+
+			}
+
+			this.wikiCategory.push(this.newTag)
+			this.newTag = ''
+
+		},
+
+		isStringInArray(array, searchString) {
+			const pattern = new RegExp(searchString, 'i'); // 创建不区分大小写的正则表达式
+
+			for (let i = 0; i < array.length; i++) {
+				if (pattern.test(array[i])) {
+					return true; // 找到匹配的字符串，返回 true
+				}
+			}
+
+			return false; // 未找到匹配的字符串，返回 false
+		}
+
+	},
+
+	components: {
+		wikititle
+	}
 
 }
 </script>

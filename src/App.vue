@@ -75,7 +75,7 @@
           <v-card width="400">
             <v-card-text>
 
-              <v-card flat style="background-color: rgb(241, 241, 241);">
+              <v-card flat class="user-id-card">
                 <v-card-text>
                   <v-list-item>
                     <v-list-item-icon>
@@ -86,7 +86,7 @@
                       <v-list-item-title>
                         {{ loginUsername }}
                       </v-list-item-title>
-                      <v-list-item-subtitle class="bender"># 权限组</v-list-item-subtitle><v-btn outlined>管理您的账户</v-btn>
+                      <v-list-item-subtitle class="bender"># 权限组</v-list-item-subtitle><v-btn outlined><v-icon>mdi-account-cog-outline</v-icon> 管理账户</v-btn>
                     </v-list-item-content>
                   </v-list-item>
                 </v-card-text>
@@ -110,9 +110,15 @@
                 </template>
               </v-list>
 
+              <v-divider class="my-1"></v-divider>
+
+              <v-btn block large elevation="0"><v-icon>mdi-logout</v-icon> 退出登录</v-btn>
+
             </v-card-text>
           </v-card>
         </v-menu>
+
+        <v-btn text icon @click="$vuetify.theme.dark = !$vuetify.theme.dark"><v-icon>mdi-theme-light-dark</v-icon></v-btn>
 
       </template>
 
@@ -249,7 +255,8 @@ export default {
       if (Cookies.get("username") != undefined) {
         store.commit("setLoginState", {
           isLogin: true,
-          username: Cookies.get("username")
+          username: Cookies.get("username"),
+          session: Cookies.get('sessionKey')
         });
         return true;
       }

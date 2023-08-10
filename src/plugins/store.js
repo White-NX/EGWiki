@@ -9,7 +9,8 @@ export default new Vuex.Store({
     userStatus:{
 
       isLogin: false,
-      username: ''
+      username: '',
+      session: ''
 
     }
 
@@ -21,6 +22,7 @@ export default new Vuex.Store({
 
       state.userStatus.isLogin = inf.isLogin
       state.userStatus.username = typeof inf.isLogin != false ? inf.username : ''
+      state.userStatus.session = typeof inf.isLogin != false ? inf.session : ''
 
 
     }

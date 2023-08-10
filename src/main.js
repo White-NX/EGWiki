@@ -8,7 +8,7 @@ import Cookies from 'js-cookie'
 import componentsInstall from './plugins/install'
 import store from './plugins/store'
 
-import throwError from './plugins/throwError' 
+import throwError from './plugins/throwError'
 
 const dataBus = new Vue()
 

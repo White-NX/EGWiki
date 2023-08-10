@@ -35,6 +35,7 @@
         <v-btn color="primary" text @click="refleshPage()">
           <v-icon>mdi-refresh</v-icon> Re-Link
         </v-btn>
+
       </v-card-actions>
     </v-card>
 
@@ -54,7 +55,7 @@ export default {
   methods: {
     refleshPage() {
       location.reload();
-    },
+    }
   }
 
 }

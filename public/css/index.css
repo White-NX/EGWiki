@@ -155,35 +155,26 @@ figure.image {
 
 }
 
-/* 最后更新日期 */
-:root {
-    --efailAccent: #dd8e66;
+/* 用户id卡片 */
+.user-id-card.theme--light .v-card__text{
+
+    background-color: rgb(241, 241, 241);
+
+}
+.user-id-card.theme--dark .v-card__text{
+
+    background-color: #181a1b;
+
 }
 
-.efail-banner-updates-title {
-    font: 800 55px Poppins;
-    line-height: 50px;
-    color: var(--efailAccent);
-    margin-left: -50px;
-}
+/* wiki编辑器卡片背景 */
+.wiki-editor.theme--light .v-card__text{
 
-.efail-banner-updates-title div {
-    display: inline-block;
-    margin: 0px 0px 0px 3px;
-    clip-path: polygon(19% 0%, 100% 0, 100% 100%, 0 100%, 0% 50%);
-    margin-left: 2px;
-    width: 76px;
-    white-space: nowrap;
-    color: white;
-}
+    background-color: rgb(241, 241, 241);
 
-.efail-banner-updates-title span {
-    content: '';
-    position: absolute;
-    display: inline-block;
-    height: 46px;
-    width: 2px;
-    margin: 1px 0px 0px 3px;
-    background-color: white;
-    transform: rotate(30deg);
+}
+.wiki-editor.theme--dark .v-card__text{
+
+    background-color: rgb(0, 0, 0);
+
 }

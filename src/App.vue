@@ -76,7 +76,7 @@
 
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer" left app permanent class="wiki-sidebar">
+    <v-navigation-drawer v-model="drawer" left app class="wiki-sidebar">
 
       <v-list-item class="wiki-sidebar-title">
         <v-list-item-content>

@@ -1,48 +1,46 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col class="pageMain">
-        <v-card style="width:100%" elevation outlined class="normalShadow">
-          <v-card-text>以此开始：
-            <v-layout>
-              <v-flex>
-                <v-text-field label="搜索" hide-details="auto">
-                  <v-icon slot="prepend">
-                    mdi-magnify
-                  </v-icon>
-                </v-text-field>
-              </v-flex>
-              <v-btn slot="append" dark large>搜索</v-btn>
-            </v-layout>
-            <v-divider class="my-2"></v-divider>
-            共{{ result_number }}个结果
-          </v-card-text>
-        </v-card>
-        <v-col lg="6" md="6" sm="12" xs="12" v-for="item in items" :key="item.name">
-          <v-card elevation-0 outlined>
-            <v-card-title>
-              <a :href="'/#/edit?label=' + item.name">{{ item.name }}</a><v-icon small
-                class="mx-1">mdi-open-in-new</v-icon>
-              <v-chip color="indigo" text-color="white" small>
-                <v-avatar left>
-                  <v-icon>mdi-account-circle</v-icon>
-                </v-avatar>
-                {{ item.author }}
-              </v-chip>
-            </v-card-title>
-            <v-card-text>
-              {{ item.description }}
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <template>
-          <div class="text-center my-2">
-            <v-pagination v-model="page" :length="6"></v-pagination>
-          </div>
-        </template>
-      </v-col>
-    </v-row>
-  </v-container>
+  <v-col class="pageMain">
+    <v-card style="width:100%" elevation outlined class="normalShadow">
+      <v-card-text>
+        <v-layout>
+          <v-flex>
+            <v-text-field label="搜索" hide-details="auto">
+              <v-icon slot="prepend">
+                mdi-magnify
+              </v-icon>
+            </v-text-field>
+          </v-flex>
+          <v-btn slot="append" dark large>搜索</v-btn>
+        </v-layout>
+        <v-divider class="my-2"></v-divider>
+        共{{ result_number }}个结果
+      </v-card-text>
+    </v-card>
+
+    <v-col lg="6" md="6" sm="12" xs="12" v-for="item in items" :key="item.name">
+      <v-card elevation-0 outlined>
+        <v-card-title>
+          <a :href="'/#/edit?label=' + item.name">{{ item.name }}</a><v-icon small class="mx-1">mdi-open-in-new</v-icon>
+          <v-chip color="indigo" text-color="white" small>
+            <v-avatar left>
+              <v-icon>mdi-account-circle</v-icon>
+            </v-avatar>
+            {{ item.author }}
+          </v-chip>
+        </v-card-title>
+        <v-card-text>
+          {{ item.description }}
+        </v-card-text>
+      </v-card>
+    </v-col>
+
+    <template>
+      <div class="text-center my-2">
+        <v-pagination v-model="page" :length="6"></v-pagination>
+      </div>
+    </template>
+
+  </v-col>
 </template>
 
 <script>

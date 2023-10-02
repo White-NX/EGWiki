@@ -13,56 +13,6 @@
 
       <v-spacer></v-spacer>
 
-      <v-dialog v-model="dialog" persistent max-width="320">
-
-        <template v-slot:activator="{ on, attrs }" v-if="!isUserLogin">
-          <v-btn text v-bind="attrs" v-on="on">
-            <span class="mr-2">登录</span>
-            <v-icon>
-              mdi-security
-            </v-icon>
-          </v-btn>
-        </template>
-
-        <v-card>
-          <v-card-title class="text-h5">
-            登录
-          </v-card-title>
-
-          <v-card-text>欢迎您来到Eyling GalgameWiki！</v-card-text>
-
-          <v-card-text>
-            <v-alert dense outlined type="error" v-if="loginFaild">
-              登录失败。{{ loginFaildReason }}
-            </v-alert>
-
-            <v-alert dense text type="success" v-if="loginSuccess">
-              <strong>登录成功！</strong>欢迎回来！
-            </v-alert>
-
-            <div class="form-data">
-              <v-form ref="loginForm" @input="validates">
-
-                <v-text-field label="账号" :rules="usernameRules" hide-details="auto" v-model="username"></v-text-field>
-                <v-text-field label="密码" :rules="passwordRules" hide-details="auto" type="password"
-                  v-model="password"></v-text-field>
-                <br>
-                <v-btn color="red darken-1" text @click="dialog = false">
-                  取消
-                </v-btn>
-                <v-btn color="primary darken-1" text :disabled="!isvalid" @click="submitForm">
-                  登录
-                </v-btn>
-              </v-form>
-            </div>
-          </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
       <ThrowError :error-report="errorReport" :on-throw-error="onThrowError" />
 
       <template v-if="isUserLogin">
@@ -86,7 +36,8 @@
                       <v-list-item-title>
                         {{ loginUsername }}
                       </v-list-item-title>
-                      <v-list-item-subtitle class="bender"># 权限组</v-list-item-subtitle><v-btn outlined><v-icon>mdi-account-cog-outline</v-icon> 管理账户</v-btn>
+                      <v-list-item-subtitle class="bender"># 权限组</v-list-item-subtitle><v-btn
+                        outlined><v-icon>mdi-account-cog-outline</v-icon> 管理账户</v-btn>
                     </v-list-item-content>
                   </v-list-item>
                 </v-card-text>
@@ -121,10 +72,11 @@
         <v-btn text icon @click="$vuetify.theme.dark = !$vuetify.theme.dark"><v-icon>mdi-theme-light-dark</v-icon></v-btn>
 
       </template>
+      <loginDialog :dialog="dialog" v-else></loginDialog>
 
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer" left app class="wiki-sidebar">
+    <v-navigation-drawer v-model="drawer" left app permanent class="wiki-sidebar">
 
       <v-list-item class="wiki-sidebar-title">
         <v-list-item-content>
@@ -140,38 +92,7 @@
         </v-list-item-content>
       </v-list-item>
 
-      <v-list dense nav class="wiki-sidebar-menu">
-        <v-list-item v-for="item in items" :key="item.title" :href="item.url">
-          <v-list-item-icon>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-
-        <div v-if="scheme" v-for="item in scheme" :key="item.topic">
-
-          <v-list-item>
-            <v-list-item-subtitle>
-              {{ item.topic }}
-              <v-divider></v-divider>
-            </v-list-item-subtitle>
-          </v-list-item>
-
-          <v-list-item v-for="items in item.items" :href="items.url" :key="items.title">
-            <v-list-item-icon>
-              <v-icon>{{ items.icon }}</v-icon>
-            </v-list-item-icon>
-
-            <v-list-item-content>
-              <v-list-item-title>{{ items.title }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </div>
-
-      </v-list>
+      <sidebar :items="items" :scheme="scheme"></sidebar>
 
     </v-navigation-drawer>
 
@@ -194,6 +115,9 @@ import store from './plugins/store'
 import throwError from '@/components/throwError.vue'
 import ThrowError from '@/components/throwError.vue'
 
+import loginDialog from '@/components/topbarFunctions/loginDialog.vue'
+import sidebar from '@/components/topbarFunctions/sidebar.vue'
+
 export default {
   name: "App",
   data: () => ({
@@ -202,21 +126,6 @@ export default {
     onThrowError: false,
     errorReport: [],
 
-    username: "",
-    password: "",
-    loginFaildReason: "",
-    loginFaild: false,
-    loginSuccess: "",
-    isvalid: true,
-    usernameRules: [
-      v => !!v || "用户名必填",
-      v => (v && v.length <= 20) || "用户名必须少于20位"
-    ],
-    passwordRules: [
-      v => !!v || "密码必填",
-      v => (v && v.length <= 30) || "密码必须少于30位"
-    ],
-    formValid: true,
     drawer: false,
     items: [
       { title: "主页", icon: "mdi-home-outline", url: "/#/" },
@@ -324,6 +233,6 @@ export default {
   comments: {
     throwError
   },
-  components: { ThrowError }
+  components: { ThrowError, loginDialog, sidebar }
 }
 </script>

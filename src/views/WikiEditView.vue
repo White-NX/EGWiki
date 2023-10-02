@@ -25,9 +25,9 @@
 					</v-icon>
 
 					<v-text-field dense :placeholder="tagPlaceholder" v-model="newTag" style="max-width:100px;"
-						:rules="tagRules"></v-text-field>
+						:rules="tagRules" @keydown.enter="addChip()"></v-text-field>
 
-					<v-icon right @click="addChip(item)" small>
+					<v-icon right @click="addChip()" small>
 						mdi-plus
 					</v-icon>
 
@@ -96,13 +96,12 @@ export default {
 
 			this.wikiEditor = row.content
 			this.wikiCategory = row.category
-			console.log(row.category)
 
 		}).catch(e => {
 
 			if (e.code != 'ERR_BAD_REQUEST') {
 
-				this.$throwError('wiki', 'Acquisition of SORCE Wiki Pages', e)
+				this.$throwError('editor', 'Acquisition of SORCE Wiki Pages', e)
 
 			}
 
@@ -116,9 +115,16 @@ export default {
 
 	methods: {
 
-		submitWiki() {
+		async submitWiki() {
 
-			this.updateWikiByTitle(this.$globalApiURL, this.title)
+			try {
+				let res = await this.updateWikiByTitle(this.$globalApiURL, this.title)
+
+				if(res.data.errorCode == 200) window.location.href = '/#/' + this.title
+
+			} catch (error) {
+				this.$throwError('editor', 'Sending Request to Server', error)
+			}
 
 		},
 
@@ -139,10 +145,10 @@ export default {
 			const session = this.$store.state.userStatus.session
 
 			try {
-				await axios.post(`${apiURL}/wiki?title=${title}`, {
+				let res =  await axios.post(`${apiURL}/wiki?title=${title}`, {
 						content: this.wikiEditor,
 						comment: this.editSummary,
-						categories: this.wikiCategory
+						categories: this.wikiCategory.join(',')
 					},
 					{
 					headers: {
@@ -150,6 +156,9 @@ export default {
 						session: session
 					},
 				});
+
+				return res
+
 			} catch (error) {
 				throw error;
 			}
@@ -168,6 +177,12 @@ export default {
 
 			this.wikiCategory.push(this.newTag)
 			this.newTag = ''
+
+		},
+
+		removeChip(removeItem){
+
+			this.wikiCategory = this.wikiCategory.filter(item => item !== removeItem)
 
 		},
 

@@ -3,23 +3,32 @@
 
     <wikititle :loading="loading" :title="wiki.title" />
 
-    <v-list>
-      <v-list-item v-for="(error, index) in history" :key="index">
-        <!--
-          <v-list-item-icon>
-          <v-icon>mdi-alert-circle-outline</v-icon>
-        </v-list-item-icon>
-        -->
+    <v-skeleton-loader v-if="loading" type="paragraph, image, paragraph"></v-skeleton-loader>
+
+    <div class="history-page-msg" v-html="msg"></div>
+
+    <v-list v-if="!loading && !isNotFound">
+      <v-list-item v-for="(history, index) in history" :key="index">
 
         <v-list-item-content>
+
           <v-list-item-title>
-            <span class="bender" style="color:gray">{{ error.creator }}</span> - {{ error.comment }}
+            <span class="bender" style="color:gray">{{ history.creator }}</span> - {{ history.comment }}
           </v-list-item-title>
-          <v-list-item-subtitle class="bender"><v-icon small>mdi-calendar-clock</v-icon> {{ error.creation_time
-          }}</v-list-item-subtitle>
+
+          <v-list-item-subtitle class="bender">
+            <v-icon small>mdi-calendar-clock</v-icon> {{ history.creation_time }}
+          </v-list-item-subtitle>
+
         </v-list-item-content>
       </v-list-item>
+
     </v-list>
+
+    <div class="notFoundError" style="text-align: center;" v-if="isNotFound">
+      <v-icon x-large>mdi-access-point-network-off</v-icon>
+      <h1>PAGE NOT FOUND</h1>
+    </div>
 
   </v-col>
 </template>
@@ -33,17 +42,20 @@ export default {
 
   data: () => ({
 
-    loading: false,
+    loading: true,
     wiki: {
       title: 'Title'
     },
+    msg: '',
 
     history: [{
-      creator: 'param',
-      comment: 'check',
-      creation_time: 'faild'
+      creator: '',
+      comment: '',
+      creation_time: ''
     }
     ],
+
+    isNotFound: false
 
   }),
 
@@ -57,9 +69,20 @@ export default {
 
     } catch (e) {
 
-      this.$throwError('wiki', 'Acquisition of Wiki History', e)
+      //this.$throwError('wiki', 'Acquisition of Wiki History', e)
+      if (e.code == 'ERR_BAD_REQUEST') {
+
+        this.isNotFound = true
+
+      } else {
+
+        this.$throwError('wiki', 'Acquisition of Wiki History', e)
+        console.error(e)
+
+      }
 
     }
+    this.loading = false
 
   },
 
@@ -74,8 +97,6 @@ export default {
 
         let row = await axios.get(`${this.$globalApiURL}/wiki?action=getWikiHistory&title=${title}`)
         let wikiHistory = row.data
-
-        console.log(wikiHistory)
 
         return (wikiHistory)
 

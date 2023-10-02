@@ -178,3 +178,12 @@ figure.image {
     background-color: rgb(0, 0, 0);
 
 }
+
+/* 构建声明卡片 */
+.powered-card.theme--light {
+    background-color: rgb(241, 241, 241);
+}
+
+.powered-card.theme--dark {
+    background-color: rgb(0, 0, 0);
+}
